@@ -59,10 +59,34 @@ Weitere Befehle:
 3. Modell wählbar: `claude-opus-4-8` (genauer) oder `claude-haiku-4-5`
    (schneller & günstiger).
 
+## Kostenloses Hosting (Live-Link)
+
+Die App ist eine rein statische PWA – jeder kostenlose Static-Host liefert sie
+inkl. HTTPS aus. **Deine Buchhaltungsdaten bleiben dabei lokal auf dem Gerät;
+gehostet wird nur der App-Code.**
+
+**Ein-Klick-Deploy** (nutzt den Standard-Branch `main`):
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/adrianartink-oss/Buchaltung_Software_priv)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/adrianartink-oss/Buchaltung_Software_priv)
+
+**Oder Repo verbinden und Branch wählen** (funktioniert auch ohne Merge nach `main`):
+
+| Host | Vorgehen |
+| --- | --- |
+| **Netlify** | Repo importieren → Branch wählen → Build/Verzeichnis sind via `netlify.toml` vorbelegt |
+| **Vercel** | Repo importieren → Branch wählen → Einstellungen via `vercel.json` |
+| **Cloudflare Pages** | Repo verbinden → Branch wählen → Build `npm run build`, Output `dist` |
+| **GitHub Pages** | Settings → Pages → Source: „GitHub Actions" (`.github/workflows/deploy.yml`) |
+
+`public/_redirects` und `public/_headers` liefern SPA-Fallback und sinnvolle
+Header für Netlify/Cloudflare automatisch mit.
+
 ## Als iPad-App installieren
 
-In Safari öffnen → **Teilen** → **„Zum Home-Bildschirm"**. Die App startet dann
-im Vollbild mit eigenem Icon und funktioniert offline.
+Den Live-Link (oder lokal `http://localhost:5173`) in Safari öffnen → **Teilen**
+→ **„Zum Home-Bildschirm"**. Die App startet dann im Vollbild mit eigenem Icon
+und funktioniert offline.
 
 ## Projektstruktur
 
