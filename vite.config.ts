@@ -21,8 +21,7 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'any',
         lang: 'de',
-        start_url: '/',
-        scope: '/',
+        // start_url/scope werden aus `base` abgeleitet (Root oder Pages-Unterpfad).
         icons: [
           {
             src: 'pwa-192.png',
@@ -44,8 +43,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        // App shell fällt bei Offline-Navigation auf index.html zurück.
-        navigateFallback: '/index.html',
+        // HashRouter lädt immer die vorgecachte index.html – kein
+        // navigateFallback nötig (funktioniert auch unter Unterpfad).
         // Große Belegbilder liegen in IndexedDB, nicht im SW-Cache.
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
