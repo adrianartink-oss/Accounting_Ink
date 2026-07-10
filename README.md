@@ -17,9 +17,13 @@ und **Sphäre (gewerblich/privat)** – optimiert fürs iPad und mit
 - 🇩🇪🇪🇸 **Trennung nach Land & Sphäre** – DE vs. ES, gewerblich vs. privat
 - 📊 **Dashboard** – Einnahmen/Ausgaben/Überschuss, Monatsverlauf, Top-Ausgaben
 - 🧾 **EÜR-Berichte** – je Jahr & Land, Export als CSV (Steuerberater) & PDF (Druck)
+- 🧮 **Umsatzsteuer-Modus** – Kleinunternehmer §19 oder Regelbesteuerung mit
+  länderabhängigen Sätzen (DE 19/7 %, ES/IVA 21/10/4 %) und USt-Voranmeldung
+- 🔁 **Wiederkehrende Buchungen** – Miete, Versicherung & Co. automatisch anlegen
 - ✨ **Claude-Beleg-Scan** – Foto oder Freitext → automatisch vorausgefüllte Buchung
+- 🤖 **KI-Zusammenfassung** – Claude fasst Zahlen & Auffälligkeiten je Zeitraum zusammen
 - 🔒 **Local-first** – alle Daten bleiben verschlüsselt im Browser (IndexedDB)
-- 💾 **Backup** – optional AES-verschlüsselter Datei-Export/-Import
+- 💾 **Backup** – optional AES-verschlüsselter Datei-Export/-Import inkl. Erinnerung
 - 📱 **PWA** – im Browser und als installierbare iPad-App (offline-fähig)
 - 🌗 **Hell/Dunkel** – system-, hell- oder dunkelabhängiges Design
 
@@ -44,6 +48,7 @@ Weitere Befehle:
 | `npm run preview` | Build lokal testen |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript prüfen |
+| `npm test` | Unit-Tests (Vitest) |
 
 ## KI-Funktionen aktivieren
 
@@ -64,11 +69,12 @@ im Vollbild mit eigenem Icon und funktioniert offline.
 ```
 src/
   db/         Datenmodell, Dexie-Schema, Kategorien-Seed, Krypto, Repository
-  lib/        Money, EÜR-Berechnung, Anthropic-Client, Bild- & Export-Helfer
+  lib/        Money, EÜR-Berechnung, USt (vat), wiederkehrende Regeln,
+              Anthropic-Client, Bild- & Export-Helfer (+ *.test.ts)
   store/      React-Hooks (reaktive Dexie-Queries)
   components/ TransactionForm, FilterBar, StatTile, Charts, …
   pages/      Dashboard, Transactions, AddTransaction, Scan, Reports,
-              Categories, SettingsPage
+              Categories, Recurring, SettingsPage
 scripts/
   gen-icons.mjs   PWA-Icons aus favicon.svg rendern (benötigt playwright)
 .claude/
