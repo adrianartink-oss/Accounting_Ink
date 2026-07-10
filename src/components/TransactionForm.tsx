@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import type { Category, Country, Settings, Sphere, TxType } from '../db/types'
 import type { TransactionInput } from '../db/repo'
-import { centsToInputString, parseAmountToCents } from '../lib/money'
+import { centsToInputString, formatCents, parseAmountToCents } from '../lib/money'
+import { VAT_RATES, defaultVatBps, splitGross } from '../lib/vat'
 import CategoryIcon from './CategoryIcon'
 
 export interface TransactionFormValues {
@@ -14,6 +15,7 @@ export interface TransactionFormValues {
   date: string
   counterparty: string
   description: string
+  vatRateBps?: number | null
 }
 
 function today(): string {
@@ -47,8 +49,17 @@ export default function TransactionForm({
   const [date, setDate] = useState(initial?.date ?? today())
   const [counterparty, setCounterparty] = useState(initial?.counterparty ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
+  const [vatRateBps, setVatRateBps] = useState<number>(
+    initial?.vatRateBps ?? defaultVatBps(initial?.country ?? settings.defaultCountry),
+  )
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+
+  // Länderabhängige USt-Sätze; bei Länderwechsel ggf. auf Standard zurücksetzen.
+  const vatOptions = VAT_RATES[country]
+  const effectiveVatBps = vatOptions.some((o) => o.bps === vatRateBps)
+    ? vatRateBps
+    : defaultVatBps(country)
 
   const options = useMemo(
     () => categories.filter((c) => c.kind === type && c.sphere === sphere),
@@ -86,7 +97,7 @@ export default function TransactionForm({
         categoryId: effectiveCategoryId,
         amountCents: cents,
         currency: 'EUR',
-        vatRateBps: settings.kleinunternehmer ? null : 1900,
+        vatRateBps: settings.kleinunternehmer ? null : effectiveVatBps,
         date,
         counterparty: counterparty.trim(),
         description: description.trim(),
@@ -124,6 +135,27 @@ export default function TransactionForm({
           onChange={(e) => setAmount(e.target.value)}
         />
       </div>
+
+      {/* Umsatzsteuer (nur bei Regelbesteuerung) */}
+      {!settings.kleinunternehmer && (
+        <div>
+          <span className="label">Umsatzsteuer ({country})</span>
+          <div className="flex flex-wrap gap-2">
+            {vatOptions.map((o) => (
+              <button
+                key={o.bps}
+                type="button"
+                className="chip"
+                data-active={o.bps === effectiveVatBps}
+                onClick={() => setVatRateBps(o.bps)}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+          <VatPreview grossCents={parseAmountToCents(amount) ?? 0} rateBps={effectiveVatBps} />
+        </div>
+      )}
 
       {/* Sphäre + Land */}
       <div className="grid grid-cols-2 gap-3">
@@ -243,6 +275,18 @@ export default function TransactionForm({
         </button>
       </div>
     </form>
+  )
+}
+
+function VatPreview({ grossCents, rateBps }: { grossCents: number; rateBps: number }) {
+  if (grossCents <= 0) return null
+  const { netCents, vatCents } = splitGross(grossCents, rateBps)
+  return (
+    <div className="mt-2 flex justify-between text-xs" style={{ color: 'var(--muted)' }}>
+      <span>Netto: {formatCents(netCents)}</span>
+      <span>USt: {formatCents(vatCents)}</span>
+      <span>Brutto: {formatCents(grossCents)}</span>
+    </div>
   )
 }
 

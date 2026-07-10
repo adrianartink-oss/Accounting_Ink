@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { Category, Receipt, Settings, Transaction } from './types'
+import type { Category, RecurringRule, Receipt, Settings, Transaction } from './types'
 import { seedCategories } from './categories.seed'
 
 /**
@@ -11,6 +11,7 @@ class BuchhaltungDB extends Dexie {
   categories!: EntityTable<Category, 'id'>
   receipts!: EntityTable<Receipt, 'id'>
   settings!: EntityTable<Settings, 'id'>
+  recurring!: EntityTable<RecurringRule, 'id'>
 
   constructor() {
     super('buchhaltung-priv')
@@ -21,6 +22,10 @@ class BuchhaltungDB extends Dexie {
       categories: 'id, kind, sphere',
       receipts: 'id, transactionId, createdAt',
       settings: 'id',
+    })
+    // v2: wiederkehrende Buchungen.
+    this.version(2).stores({
+      recurring: 'id, active, nextDate',
     })
   }
 }
@@ -38,6 +43,7 @@ export const defaultSettings: Settings = {
   aiModel: 'claude-opus-4-8',
   disclaimerAccepted: false,
   theme: 'system',
+  backupReminderDays: 14,
 }
 
 /**
@@ -49,9 +55,17 @@ export async function ensureSeeded(): Promise<void> {
     const catCount = await db.categories.count()
     if (catCount === 0) {
       await db.categories.bulkAdd(seedCategories)
+    } else {
+      // Backfill: Sortierreihenfolge für bereits vorhandene Seed-Kategorien.
+      const order = new Map(seedCategories.map((c) => [c.id, c.sortOrder]))
+      const existing = await db.categories.toArray()
+      const patches = existing
+        .filter((c) => c.sortOrder == null && order.has(c.id))
+        .map((c) => ({ key: c.id, changes: { sortOrder: order.get(c.id) } }))
+      if (patches.length) await db.categories.bulkUpdate(patches)
     }
-    const existing = await db.settings.get(SETTINGS_ID)
-    if (!existing) {
+    const settingsRow = await db.settings.get(SETTINGS_ID)
+    if (!settingsRow) {
       await db.settings.add(defaultSettings)
     }
   })

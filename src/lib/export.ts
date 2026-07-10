@@ -1,4 +1,4 @@
-import type { Category, Transaction } from '../db/types'
+import type { Category, RecurringRule, Transaction } from '../db/types'
 import { centsToInputString } from './money'
 
 /** Löst einen Datei-Download im Browser aus. */
@@ -82,10 +82,12 @@ export function transactionsToCsv(
   return '﻿' + [header.join(';'), ...rows].join('\r\n')
 }
 
-/** Vollständiger Datenexport (Buchungen + Kategorien) als JSON-Objekt. */
+/** Vollständiger Datenexport (Buchungen + Kategorien + Regeln) als JSON-Objekt. */
 export interface BackupData {
   version: 1
   exportedAt: string
   transactions: Transaction[]
   categories: Category[]
+  /** Wiederkehrende Regeln (optional, seit v0.2). */
+  recurring?: RecurringRule[]
 }

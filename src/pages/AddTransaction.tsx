@@ -52,6 +52,7 @@ export default function AddTransaction() {
         date: existing.date,
         counterparty: existing.counterparty,
         description: existing.description,
+        vatRateBps: existing.vatRateBps,
       }
     : state.prefill
 

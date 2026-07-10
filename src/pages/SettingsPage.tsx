@@ -87,12 +87,20 @@ export default function SettingsPage() {
 
       <ApiKeySection />
 
-      <Section title="Kategorien">
+      <Section title="Verwaltung">
         <button
-          className="flex w-full items-center justify-between py-1"
+          className="flex w-full items-center justify-between border-b py-2.5"
+          style={{ borderColor: 'var(--border)' }}
           onClick={() => navigate('/categories')}
         >
           <span style={{ color: 'var(--fg)' }}>Kategorien verwalten</span>
+          <ChevronRight size={18} color="var(--muted)" />
+        </button>
+        <button
+          className="flex w-full items-center justify-between py-2.5"
+          onClick={() => navigate('/recurring')}
+        >
+          <span style={{ color: 'var(--fg)' }}>Wiederkehrende Buchungen</span>
           <ChevronRight size={18} color="var(--muted)" />
         </button>
       </Section>
@@ -278,7 +286,16 @@ function ApiKeySection() {
 
 function BackupControls() {
   const fileRef = useRef<HTMLInputElement>(null)
+  const settings = useSettings()
   const [msg, setMsg] = useState<string | null>(null)
+
+  const daysSinceBackup =
+    settings.lastBackupAt != null
+      ? Math.floor((Date.now() - settings.lastBackupAt) / 86_400_000)
+      : null
+  const overdue =
+    settings.backupReminderDays > 0 &&
+    (daysSinceBackup == null || daysSinceBackup >= settings.backupReminderDays)
 
   async function exportBackup() {
     const data = await buildBackup()
@@ -300,6 +317,7 @@ function BackupControls() {
         `buchhaltung-backup_${date}.json`,
       )
     }
+    await updateSettings({ lastBackupAt: Date.now() })
   }
 
   async function importFile(file: File) {
@@ -346,6 +364,17 @@ function BackupControls() {
         className="hidden"
         onChange={(e) => e.target.files?.[0] && importFile(e.target.files[0])}
       />
+      <p
+        className="mt-2 text-xs"
+        style={{ color: overdue ? 'var(--expense)' : 'var(--muted)' }}
+      >
+        {settings.lastBackupAt == null
+          ? 'Noch kein Backup erstellt.'
+          : daysSinceBackup === 0
+            ? 'Letzte Sicherung: heute.'
+            : `Letzte Sicherung: vor ${daysSinceBackup} Tag(en).`}
+        {overdue && ' – Zeit für ein neues Backup.'}
+      </p>
       <p className="mt-2 flex items-start gap-1.5 text-xs" style={{ color: 'var(--muted)' }}>
         <Database size={13} className="mt-0.5 shrink-0" />
         Datei-Backup (JSON), optional per Passphrase AES-verschlüsselt. Belege sind nicht enthalten.

@@ -40,9 +40,20 @@ export function parseAmountToCents(input: string): number | null {
     normalized = normalized.replace(',', '.')
   }
 
-  const value = Number.parseFloat(normalized)
-  if (Number.isNaN(value)) return null
-  return Math.round(value * 100)
+  if (!/\d/.test(normalized)) return null
+
+  // String-basierte Cent-Berechnung – vermeidet Float-Rundungsfehler
+  // (z. B. 1,005 → 101 statt 100).
+  const negative = normalized.startsWith('-')
+  const unsigned = normalized.replace('-', '')
+  const [intPart = '0', fracPart = ''] = unsigned.split('.')
+  const whole = Number.parseInt(intPart || '0', 10)
+  if (Number.isNaN(whole)) return null
+  const frac2 = fracPart.slice(0, 2).padEnd(2, '0')
+  let cents = whole * 100 + Number.parseInt(frac2, 10)
+  // Kaufmännisch runden anhand der dritten Nachkommastelle.
+  if ((fracPart[2] ?? '0') >= '5') cents += 1
+  return negative ? -cents : cents
 }
 
 /** Wandelt Cent in einen editierbaren de-DE-String (ohne Währungssymbol). */

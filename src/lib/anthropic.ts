@@ -214,6 +214,39 @@ export async function parseNaturalLanguage(
   return normalize(extractToolInput(message), categories)
 }
 
+/**
+ * Erzeugt eine kurze, natürlichsprachige Zusammenfassung + Plausibilitäts-
+ * hinweise für einen Zeitraum. `report` ist eine bereits aggregierte
+ * Textdarstellung (Kategorien + Summen), um Token zu sparen.
+ */
+export async function summarizePeriod(
+  report: string,
+  periodLabel: string,
+  settings: Settings,
+): Promise<string> {
+  const { client, model } = await buildClient(settings)
+  const message = await client.messages.create({
+    model,
+    max_tokens: 700,
+    messages: [
+      {
+        role: 'user',
+        content:
+          `Du bist Buchhaltungs-Assistent für einen selbständigen Tätowierer (EÜR).\n` +
+          `Fasse den folgenden Zeitraum (${periodLabel}) in 4-6 knappen deutschen ` +
+          `Stichpunkten zusammen: wichtigste Zahlen, auffällige Kategorien und – ` +
+          `wo sinnvoll – Plausibilitäts-/Sparhinweise. Keine Steuerberatung, keine ` +
+          `Rechtsauskunft. Antworte nur mit den Stichpunkten.\n\n${report}`,
+      },
+    ],
+  })
+  return message.content
+    .filter((b) => b.type === 'text')
+    .map((b) => (b.type === 'text' ? b.text : ''))
+    .join('\n')
+    .trim()
+}
+
 /** Prüft einen API-Key mit einem minimalen Test-Request. */
 export async function testApiKey(apiKey: string, model: AiModel): Promise<boolean> {
   const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
