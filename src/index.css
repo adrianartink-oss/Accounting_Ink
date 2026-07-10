@@ -1,0 +1,190 @@
+@import 'tailwindcss';
+
+/* ── Farbschema (dunkel als Standard, hell via [data-theme="light"]) ────── */
+:root {
+  --bg: #0b0f0e;
+  --bg-elev: #0f1513;
+  --surface: #141b19;
+  --surface-2: #1b2422;
+  --border: #24312e;
+  --fg: #e8f0ee;
+  --muted: #8ba39d;
+  --accent: #14b8a6;
+  --accent-strong: #0d9488;
+  --accent-fg: #052e2b;
+  --income: #34d399;
+  --expense: #fb7185;
+  --shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg: #f6f8f7;
+  --bg-elev: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #eef2f1;
+  --border: #dbe4e1;
+  --fg: #0f1a17;
+  --muted: #5c706b;
+  --accent: #0d9488;
+  --accent-strong: #0f766e;
+  --accent-fg: #ffffff;
+  --income: #059669;
+  --expense: #e11d48;
+  --shadow: 0 10px 30px -18px rgba(15, 42, 37, 0.25);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']):not([data-theme='light']) {
+    --bg: #f6f8f7;
+    --bg-elev: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #eef2f1;
+    --border: #dbe4e1;
+    --fg: #0f1a17;
+    --muted: #5c706b;
+    --accent: #0d9488;
+    --accent-strong: #0f766e;
+    --accent-fg: #ffffff;
+    --income: #059669;
+    --expense: #e11d48;
+    --shadow: 0 10px 30px -18px rgba(15, 42, 37, 0.25);
+    color-scheme: light;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elev: var(--bg-elev);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-fg: var(--accent-fg);
+  --color-income: var(--income);
+  --color-expense: var(--expense);
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+/* Eingaben sollen wählbar bleiben, UI-Chrome nicht. */
+button,
+.no-select {
+  user-select: none;
+}
+
+/* ── Wiederverwendbare Komponentenklassen ──────────────────────────────── */
+@layer components {
+  .card {
+    @apply rounded-2xl border p-4;
+    background: var(--surface);
+    border-color: var(--border);
+    box-shadow: var(--shadow);
+  }
+
+  .input {
+    @apply w-full rounded-xl border px-4 py-3 text-base outline-none transition;
+    background: var(--bg-elev);
+    border-color: var(--border);
+    color: var(--fg);
+  }
+  .input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+  .input::placeholder {
+    color: var(--muted);
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-base font-medium transition active:scale-[0.98];
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--fg);
+  }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-fg);
+    font-weight: 600;
+  }
+  .btn-ghost {
+    background: transparent;
+    border-color: transparent;
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--muted);
+  }
+  .chip[data-active='true'] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-fg);
+  }
+
+  .label {
+    @apply mb-1.5 block text-sm font-medium;
+    color: var(--muted);
+  }
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ── Druck / PDF-Export (Berichte) ─────────────────────────────────────── */
+@media print {
+  aside,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  main {
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+  .card {
+    box-shadow: none;
+    border-color: #ccc;
+    break-inside: avoid;
+  }
+  .print-area {
+    color: #000;
+  }
+}

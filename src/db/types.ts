@@ -1,0 +1,94 @@
+// Gemeinsame Domänen-Typen für die Buchhaltung.
+
+/** Buchungsart. */
+export type TxType = 'income' | 'expense'
+
+/** Sphäre: gewerblich oder privat. */
+export type Sphere = 'business' | 'private'
+
+/** Land der Buchung (Steuer-/Umzugstrennung DE ↔ ES). */
+export type Country = 'DE' | 'ES'
+
+/** Herkunft eines Datensatzes. */
+export type TxSource = 'manual' | 'ai'
+
+/** Unterstützte Währungen (ISO-4217). */
+export type Currency = 'EUR'
+
+/**
+ * Eine einzelne Buchung (Einnahme oder Ausgabe).
+ * Beträge werden als ganzzahlige Cent gespeichert, um Float-Rundungsfehler
+ * zu vermeiden. `vatRateBps` (Basispunkte, z. B. 1900 = 19 %) bleibt für die
+ * spätere Umstellung von Kleinunternehmer (§19) auf Regelbesteuerung
+ * vorhanden, ist bei Kleinunternehmern aber `null`.
+ */
+export interface Transaction {
+  id: string
+  /** ISO-Datum YYYY-MM-DD. */
+  date: string
+  type: TxType
+  /** Betrag in Cent (immer positiv; Vorzeichen ergibt sich aus `type`). */
+  amountCents: number
+  currency: Currency
+  sphere: Sphere
+  country: Country
+  categoryId: string
+  /** USt-Satz in Basispunkten oder null (Kleinunternehmer). */
+  vatRateBps: number | null
+  /** Freitext / Verwendungszweck. */
+  description: string
+  /** Geschäftspartner / Lieferant / Kunde. */
+  counterparty: string
+  /** Referenz auf einen hinterlegten Beleg, falls vorhanden. */
+  receiptId?: string
+  source: TxSource
+  /** Epoch-Millisekunden. */
+  createdAt: number
+  updatedAt: number
+}
+
+/** Kategorie (Kontenrahmen-orientiert, SKR03). */
+export interface Category {
+  id: string
+  name: string
+  kind: TxType
+  sphere: Sphere
+  /** SKR03-Kontonummer (informativ). */
+  skr03Code?: string
+  /** Tailwind-kompatible Akzentfarbe (HEX). */
+  color: string
+  /** lucide-react Icon-Name. */
+  icon: string
+  /** Vom Nutzer angelegt (nicht aus dem Seed). */
+  custom?: boolean
+}
+
+/** Belegbild inkl. Vorschau. */
+export interface Receipt {
+  id: string
+  /** Original-Bild als Blob. */
+  blob: Blob
+  /** Kleine Vorschau als Data-URL. */
+  thumbnail: string
+  transactionId?: string
+  createdAt: number
+}
+
+/** Verfügbare Claude-Modelle für die KI-Funktionen. */
+export type AiModel = 'claude-opus-4-8' | 'claude-haiku-4-5'
+
+/** Einstellungen (genau ein Datensatz, id === 'singleton'). */
+export interface Settings {
+  id: 'singleton'
+  /** Kleinunternehmer nach §19 UStG (keine USt). */
+  kleinunternehmer: boolean
+  defaultCountry: Country
+  businessName: string
+  address: string
+  /** Verschlüsselter Anthropic-API-Key (AES-GCM, base64). */
+  apiKeyEncrypted?: string
+  aiModel: AiModel
+  disclaimerAccepted: boolean
+  /** Farbschema. */
+  theme: 'system' | 'light' | 'dark'
+}
