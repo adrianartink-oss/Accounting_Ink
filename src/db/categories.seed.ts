@@ -5,9 +5,10 @@ import type { Category } from './types'
  * auf ein Tätowier-Einzelunternehmen. SKR03-Codes sind informativ und helfen
  * beim späteren Export / Gespräch mit dem Steuerberater.
  *
- * Icons sind lucide-react Namen; Farben sind HEX-Akzente.
+ * Icons sind lucide-react Namen; Farben sind HEX-Akzente. Die Array-Reihenfolge
+ * bestimmt die Sortierung in Auswahllisten (siehe `sortOrder` unten).
  */
-export const seedCategories: Category[] = [
+const RAW: Omit<Category, 'sortOrder'>[] = [
   // ── Gewerbliche Einnahmen ──────────────────────────────────────────────
   {
     id: 'inc-tattoo',
@@ -158,3 +159,6 @@ export const seedCategories: Category[] = [
     icon: 'Home',
   },
 ]
+
+/** Kategorien mit kuratierter Sortierreihenfolge (Array-Index). */
+export const seedCategories: Category[] = RAW.map((c, i) => ({ ...c, sortOrder: i }))

@@ -1,0 +1,15 @@
+# Konfiguration für kostenloses Hosting auf Netlify (netlify.com).
+# Netlify baut die PWA automatisch aus dem Repo – kein lokaler Build nötig.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# SPA-Fallback (für Hash-Routing nicht zwingend, aber robust).
+# Greift nur, wenn keine echte Datei passt – Manifest/SW/Assets bleiben unberührt.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

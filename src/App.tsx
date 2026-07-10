@@ -16,6 +16,7 @@ import AddTransaction from './pages/AddTransaction'
 import Scan from './pages/Scan'
 import Reports from './pages/Reports'
 import Categories from './pages/Categories'
+import Recurring from './pages/Recurring'
 import SettingsPage from './pages/SettingsPage'
 import Disclaimer from './components/Disclaimer'
 
@@ -76,6 +77,7 @@ export default function App() {
             <Route path="/scan" element={<Scan />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/categories" element={<Categories />} />
+            <Route path="/recurring" element={<Recurring />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </div>

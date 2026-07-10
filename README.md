@@ -17,9 +17,13 @@ und **Sphäre (gewerblich/privat)** – optimiert fürs iPad und mit
 - 🇩🇪🇪🇸 **Trennung nach Land & Sphäre** – DE vs. ES, gewerblich vs. privat
 - 📊 **Dashboard** – Einnahmen/Ausgaben/Überschuss, Monatsverlauf, Top-Ausgaben
 - 🧾 **EÜR-Berichte** – je Jahr & Land, Export als CSV (Steuerberater) & PDF (Druck)
+- 🧮 **Umsatzsteuer-Modus** – Kleinunternehmer §19 oder Regelbesteuerung mit
+  länderabhängigen Sätzen (DE 19/7 %, ES/IVA 21/10/4 %) und USt-Voranmeldung
+- 🔁 **Wiederkehrende Buchungen** – Miete, Versicherung & Co. automatisch anlegen
 - ✨ **Claude-Beleg-Scan** – Foto oder Freitext → automatisch vorausgefüllte Buchung
+- 🤖 **KI-Zusammenfassung** – Claude fasst Zahlen & Auffälligkeiten je Zeitraum zusammen
 - 🔒 **Local-first** – alle Daten bleiben verschlüsselt im Browser (IndexedDB)
-- 💾 **Backup** – optional AES-verschlüsselter Datei-Export/-Import
+- 💾 **Backup** – optional AES-verschlüsselter Datei-Export/-Import inkl. Erinnerung
 - 📱 **PWA** – im Browser und als installierbare iPad-App (offline-fähig)
 - 🌗 **Hell/Dunkel** – system-, hell- oder dunkelabhängiges Design
 
@@ -44,6 +48,7 @@ Weitere Befehle:
 | `npm run preview` | Build lokal testen |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript prüfen |
+| `npm test` | Unit-Tests (Vitest) |
 
 ## KI-Funktionen aktivieren
 
@@ -54,21 +59,46 @@ Weitere Befehle:
 3. Modell wählbar: `claude-opus-4-8` (genauer) oder `claude-haiku-4-5`
    (schneller & günstiger).
 
+## Kostenloses Hosting (Live-Link)
+
+Die App ist eine rein statische PWA – jeder kostenlose Static-Host liefert sie
+inkl. HTTPS aus. **Deine Buchhaltungsdaten bleiben dabei lokal auf dem Gerät;
+gehostet wird nur der App-Code.**
+
+**Ein-Klick-Deploy** (nutzt den Standard-Branch `main`):
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/adrianartink-oss/Buchaltung_Software_priv)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/adrianartink-oss/Buchaltung_Software_priv)
+
+**Oder Repo verbinden und Branch wählen** (funktioniert auch ohne Merge nach `main`):
+
+| Host | Vorgehen |
+| --- | --- |
+| **Netlify** | Repo importieren → Branch wählen → Build/Verzeichnis sind via `netlify.toml` vorbelegt |
+| **Vercel** | Repo importieren → Branch wählen → Einstellungen via `vercel.json` |
+| **Cloudflare Pages** | Repo verbinden → Branch wählen → Build `npm run build`, Output `dist` |
+| **GitHub Pages** | Settings → Pages → Source: „GitHub Actions" (`.github/workflows/deploy.yml`) |
+
+`public/_redirects` und `public/_headers` liefern SPA-Fallback und sinnvolle
+Header für Netlify/Cloudflare automatisch mit.
+
 ## Als iPad-App installieren
 
-In Safari öffnen → **Teilen** → **„Zum Home-Bildschirm"**. Die App startet dann
-im Vollbild mit eigenem Icon und funktioniert offline.
+Den Live-Link (oder lokal `http://localhost:5173`) in Safari öffnen → **Teilen**
+→ **„Zum Home-Bildschirm"**. Die App startet dann im Vollbild mit eigenem Icon
+und funktioniert offline.
 
 ## Projektstruktur
 
 ```
 src/
   db/         Datenmodell, Dexie-Schema, Kategorien-Seed, Krypto, Repository
-  lib/        Money, EÜR-Berechnung, Anthropic-Client, Bild- & Export-Helfer
+  lib/        Money, EÜR-Berechnung, USt (vat), wiederkehrende Regeln,
+              Anthropic-Client, Bild- & Export-Helfer (+ *.test.ts)
   store/      React-Hooks (reaktive Dexie-Queries)
   components/ TransactionForm, FilterBar, StatTile, Charts, …
   pages/      Dashboard, Transactions, AddTransaction, Scan, Reports,
-              Categories, SettingsPage
+              Categories, Recurring, SettingsPage
 scripts/
   gen-icons.mjs   PWA-Icons aus favicon.svg rendern (benötigt playwright)
 .claude/

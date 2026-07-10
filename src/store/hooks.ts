@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, defaultSettings } from '../db/schema'
-import type { Category, Settings, Transaction } from '../db/types'
+import type { Category, RecurringRule, Settings, Transaction } from '../db/types'
 
 /** Reaktive Einstellungen (fällt auf Defaults zurück, bis geladen). */
 export function useSettings(): Settings {
@@ -8,9 +8,15 @@ export function useSettings(): Settings {
   return settings ?? defaultSettings
 }
 
-/** Reaktive Kategorienliste. */
+/** Reaktive Kategorienliste (kuratierte Reihenfolge, dann alphabetisch). */
 export function useCategories(): Category[] {
-  const cats = useLiveQuery(() => db.categories.toArray(), [])
+  const cats = useLiveQuery(async () => {
+    const arr = await db.categories.toArray()
+    return arr.sort(
+      (a, b) =>
+        (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999) || a.name.localeCompare(b.name),
+    )
+  }, [])
   return cats ?? []
 }
 
@@ -26,4 +32,10 @@ export function useTransactions(): Transaction[] {
 /** Einzelne Buchung reaktiv. */
 export function useTransaction(id: string | undefined): Transaction | undefined {
   return useLiveQuery(() => (id ? db.transactions.get(id) : undefined), [id])
+}
+
+/** Reaktive Liste der wiederkehrenden Regeln. */
+export function useRecurring(): RecurringRule[] {
+  const rules = useLiveQuery(() => db.recurring.orderBy('nextDate').toArray(), [])
+  return rules ?? []
 }

@@ -10,7 +10,7 @@ export type Sphere = 'business' | 'private'
 export type Country = 'DE' | 'ES'
 
 /** Herkunft eines Datensatzes. */
-export type TxSource = 'manual' | 'ai'
+export type TxSource = 'manual' | 'ai' | 'recurring'
 
 /** Unterstützte Währungen (ISO-4217). */
 export type Currency = 'EUR'
@@ -59,6 +59,8 @@ export interface Category {
   color: string
   /** lucide-react Icon-Name. */
   icon: string
+  /** Sortierreihenfolge in Auswahllisten (kleiner = weiter oben). */
+  sortOrder?: number
   /** Vom Nutzer angelegt (nicht aus dem Seed). */
   custom?: boolean
 }
@@ -71,6 +73,34 @@ export interface Receipt {
   /** Kleine Vorschau als Data-URL. */
   thumbnail: string
   transactionId?: string
+  createdAt: number
+}
+
+/** Intervall für wiederkehrende Buchungen. */
+export type RecurringInterval = 'weekly' | 'monthly' | 'quarterly' | 'yearly'
+
+/**
+ * Vorlage für eine wiederkehrende Buchung. Beim App-Start werden alle fälligen
+ * Buchungen bis zum heutigen Tag erzeugt und `nextDate` weitergeschaltet.
+ */
+export interface RecurringRule {
+  id: string
+  active: boolean
+  interval: RecurringInterval
+  // Vorlage
+  type: TxType
+  sphere: Sphere
+  country: Country
+  categoryId: string
+  amountCents: number
+  currency: Currency
+  vatRateBps: number | null
+  counterparty: string
+  description: string
+  // Terminierung
+  startDate: string
+  nextDate: string
+  endDate?: string
   createdAt: number
 }
 
@@ -91,4 +121,8 @@ export interface Settings {
   disclaimerAccepted: boolean
   /** Farbschema. */
   theme: 'system' | 'light' | 'dark'
+  /** Zeitpunkt des letzten Backups (Epoch ms). */
+  lastBackupAt?: number
+  /** Nach wie vielen Tagen an ein Backup erinnert wird (0 = aus). */
+  backupReminderDays: number
 }
