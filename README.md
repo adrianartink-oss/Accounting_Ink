@@ -20,7 +20,10 @@ und **Sphäre (gewerblich/privat)** – optimiert fürs iPad und mit
 - 🧮 **Umsatzsteuer-Modus** – Kleinunternehmer §19 oder Regelbesteuerung mit
   länderabhängigen Sätzen (DE 19/7 %, ES/IVA 21/10/4 %) und USt-Voranmeldung
 - 🔁 **Wiederkehrende Buchungen** – Miete, Versicherung & Co. automatisch anlegen
-- ✨ **Claude-Beleg-Scan** – Foto oder Freitext → automatisch vorausgefüllte Buchung
+- 🆓 **Gratis-Beleg-Scan (lokal)** – Betrag & Datum ohne Konto/API-Key direkt auf
+  dem Gerät (Tesseract/WASM); das Bild verlässt das Gerät nicht
+- ✨ **Claude-Beleg-Scan (optional)** – höchste Genauigkeit inkl. Kategorie-Vorschlag
+  & Freitext-Erfassung (eigener Anthropic-API-Key)
 - 🤖 **KI-Zusammenfassung** – Claude fasst Zahlen & Auffälligkeiten je Zeitraum zusammen
 - 🔒 **Local-first** – alle Daten bleiben verschlüsselt im Browser (IndexedDB)
 - 💾 **Backup** – optional AES-verschlüsselter Datei-Export/-Import inkl. Erinnerung
