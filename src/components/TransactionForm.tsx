@@ -266,8 +266,13 @@ export default function TransactionForm({
 
       <div className="flex gap-3 pt-1">
         {onDelete && (
-          <button type="button" className="btn" onClick={onDelete}>
-            <Trash2 size={18} color="var(--expense)" />
+          <button
+            type="button"
+            className="btn"
+            style={{ color: 'var(--expense)', borderColor: 'var(--expense)' }}
+            onClick={onDelete}
+          >
+            <Trash2 size={18} /> Löschen
           </button>
         )}
         <button type="submit" className="btn btn-primary flex-1" disabled={saving}>
