@@ -33,7 +33,9 @@ export default function Dashboard() {
   const [filter, setFilter] = useState<TxFilter>({
     country: 'ALL',
     sphere: 'ALL',
-    year: new Date().getFullYear(),
+    // Standard: alle Jahre – so erscheinen auch gescannte Belege mit
+    // älterem Belegdatum in der Übersicht. Eingrenzung über die Jahres-Chips.
+    year: 'ALL',
   })
 
   const filtered = useMemo(() => filterTransactions(txs, filter), [txs, filter])

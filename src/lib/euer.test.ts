@@ -99,3 +99,28 @@ describe('availableYears', () => {
     expect(years[0]).toBeGreaterThanOrEqual(years[years.length - 1])
   })
 })
+
+describe('Regression: gescannte Belege & Jahresfilter', () => {
+  it('summarize zählt gescannte Buchungen (source: "ai") mit', () => {
+    const txs = [
+      tx({ type: 'income', amountCents: 5000, source: 'manual' }),
+      tx({ type: 'expense', amountCents: 2000, source: 'ai' }),
+    ]
+    const s = summarize(txs)
+    expect(s.incomeCents).toBe(5000)
+    expect(s.expenseCents).toBe(2000)
+    expect(s.count).toBe(2)
+  })
+
+  it('year "ALL" bezieht Buchungen aus verschiedenen Jahren ein', () => {
+    const txs = [
+      tx({ amountCents: 1000, date: '2024-02-01' }),
+      tx({ amountCents: 1000, date: '2025-02-01', source: 'ai' }),
+      tx({ amountCents: 1000, date: '2026-02-01' }),
+    ]
+    const all = filterTransactions(txs, { country: 'ALL', sphere: 'ALL', year: 'ALL' })
+    expect(all).toHaveLength(3)
+    // Ein konkretes Jahr grenzt weiterhin korrekt ein.
+    expect(filterTransactions(txs, { year: 2025 })).toHaveLength(1)
+  })
+})
