@@ -1,5 +1,8 @@
-import type { Category, RecurringRule, Transaction } from '../db/types'
+import type { Category, RecurringRule, Settings, Transaction } from '../db/types'
 import { centsToInputString } from './money'
+
+/** Gesicherte Einstellungen ohne sensible Felder (API-Key). */
+export type BackupSettings = Omit<Settings, 'apiKeyEncrypted'>
 
 /** Löst einen Datei-Download im Browser aus. */
 export function downloadBlob(blob: Blob, filename: string): void {
@@ -90,4 +93,6 @@ export interface BackupData {
   categories: Category[]
   /** Wiederkehrende Regeln (optional, seit v0.2). */
   recurring?: RecurringRule[]
+  /** Stammdaten & Kennzahlen ohne API-Key (optional, seit v0.3). */
+  settings?: BackupSettings
 }

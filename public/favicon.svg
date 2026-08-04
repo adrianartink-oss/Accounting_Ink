@@ -1,21 +1,22 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#14b8a6"/>
-      <stop offset="1" stop-color="#0d9488"/>
+      <stop stop-color="#c1181c"/>
+      <stop offset="1" stop-color="#8f1114"/>
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <!-- Beleg / Quittung -->
-  <path d="M170 96h172c13.3 0 24 10.7 24 24v276l-34-22-33 22-33-22-33 22-33-22-34 22V120c0-13.3 10.7-24 24-24z"
-        fill="#ffffff"/>
-  <g stroke="#0d9488" stroke-width="16" stroke-linecap="round">
-    <line x1="196" y1="164" x2="316" y2="164"/>
-    <line x1="196" y1="216" x2="316" y2="216"/>
-    <line x1="196" y1="268" x2="272" y2="268"/>
-  </g>
-  <!-- Euro-Akzent -->
-  <circle cx="322" cy="300" r="52" fill="#14b8a6"/>
-  <path d="M338 278c-6-7-15-11-24-11-16 0-29 14-29 33s13 33 29 33c9 0 18-4 24-11M292 296h34M292 314h30"
-        stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Klassisches Old-School-Herz -->
+  <path d="M256 360 C 150 284, 118 210, 166 170 C 208 135, 252 160, 256 194
+           C 260 160, 304 135, 346 170 C 394 210, 362 284, 256 360 Z"
+        fill="#fbf6ec" stroke="#2b211a" stroke-width="14" stroke-linejoin="round"/>
+
+  <!-- Banner über dem Herz -->
+  <path d="M120 250 L392 250 L392 300 L120 300 Z" fill="#fbf6ec" stroke="#2b211a" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M120 250 L96 238 L96 300 L120 300 Z" fill="#e7dcc6" stroke="#2b211a" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M392 250 L416 238 L416 300 L392 300 Z" fill="#e7dcc6" stroke="#2b211a" stroke-width="12" stroke-linejoin="round"/>
+
+  <text x="256" y="292" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="58" font-weight="700" fill="#b3161a">€</text>
 </svg>

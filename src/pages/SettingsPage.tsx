@@ -16,7 +16,7 @@ import { decryptString, encryptString, getDeviceSecret } from '../db/crypto'
 import { testApiKey } from '../lib/anthropic'
 import { buildBackup, clearAllData, importBackup } from '../db/repo'
 import { downloadBlob, transactionsToCsv, type BackupData } from '../lib/export'
-import type { AiModel, Country } from '../db/types'
+import type { AiModel } from '../db/types'
 import PageHeader from '../components/PageHeader'
 
 export default function SettingsPage() {
@@ -29,60 +29,27 @@ export default function SettingsPage() {
     <div>
       <PageHeader title="Einstellungen" subtitle="Geschäftsdaten, KI, Backup & mehr" />
 
-      <Section title="Geschäftsdaten">
-        <div className="space-y-3">
-          <div>
-            <label className="label">Name / Firmierung</label>
-            <input
-              className="input"
-              value={settings.businessName}
-              placeholder="Vor- und Nachname"
-              onChange={(e) => updateSettings({ businessName: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="label">Adresse</label>
-            <input
-              className="input"
-              value={settings.address}
-              placeholder="Straße, PLZ Ort"
-              onChange={(e) => updateSettings({ address: e.target.value })}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="label">Standardland</label>
-              <select
-                className="input"
-                value={settings.defaultCountry}
-                onChange={(e) => updateSettings({ defaultCountry: e.target.value as Country })}
-              >
-                <option value="DE">🇩🇪 Deutschland</option>
-                <option value="ES">🇪🇸 Spanien</option>
-              </select>
-            </div>
-            <div>
-              <label className="label">Darstellung</label>
-              <select
-                className="input"
-                value={settings.theme}
-                onChange={(e) =>
-                  updateSettings({ theme: e.target.value as 'system' | 'light' | 'dark' })
-                }
-              >
-                <option value="system">System</option>
-                <option value="dark">Dunkel</option>
-                <option value="light">Hell</option>
-              </select>
-            </div>
-          </div>
-          <ToggleRow
-            label="Kleinunternehmer (§19 UStG)"
-            hint="Keine Umsatzsteuer ausweisen"
-            checked={settings.kleinunternehmer}
-            onChange={(v) => updateSettings({ kleinunternehmer: v })}
-          />
-        </div>
+      <Section title="Darstellung">
+        <label className="label">Farbschema</label>
+        <select
+          className="input"
+          value={settings.theme}
+          onChange={(e) =>
+            updateSettings({ theme: e.target.value as 'system' | 'light' | 'dark' })
+          }
+        >
+          <option value="system">System</option>
+          <option value="light">Hell (Creme)</option>
+          <option value="dark">Dunkel (Anthrazit)</option>
+        </select>
+        <p className="mt-3 text-sm" style={{ color: 'var(--muted)' }}>
+          Geschäftsdaten (Name, Adresse, Steuernummer, §19-Status …) und Kennzahlen
+          findest du jetzt im{' '}
+          <button className="underline" style={{ color: 'var(--accent)' }} onClick={() => navigate('/studio')}>
+            Studio
+          </button>
+          .
+        </p>
       </Section>
 
       <ApiKeySection />
@@ -155,45 +122,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       </h2>
       {children}
     </div>
-  )
-}
-
-function ToggleRow({
-  label,
-  hint,
-  checked,
-  onChange,
-}: {
-  label: string
-  hint?: string
-  checked: boolean
-  onChange: (v: boolean) => void
-}) {
-  return (
-    <button
-      className="flex w-full items-center justify-between py-1 text-left"
-      onClick={() => onChange(!checked)}
-    >
-      <span>
-        <span className="block font-medium" style={{ color: 'var(--fg)' }}>
-          {label}
-        </span>
-        {hint && (
-          <span className="block text-sm" style={{ color: 'var(--muted)' }}>
-            {hint}
-          </span>
-        )}
-      </span>
-      <span
-        className="relative h-7 w-12 shrink-0 rounded-full transition"
-        style={{ background: checked ? 'var(--accent)' : 'var(--surface-2)' }}
-      >
-        <span
-          className="absolute top-1 h-5 w-5 rounded-full bg-white transition-all"
-          style={{ left: checked ? 24 : 4 }}
-        />
-      </span>
-    </button>
   )
 }
 
