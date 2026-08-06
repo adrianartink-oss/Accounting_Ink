@@ -3,7 +3,8 @@
 
 /* ── Old-School-Tattoo-Palette ──────────────────────────────────────────────
    Hell = Creme („Flash auf Papier"), Dunkel = Anthrazit. Akzent = Tattoo-Rot.
-   Standard ist hell (siehe defaultSettings.theme = 'light'). */
+   Standard folgt dem System (defaultSettings.theme = 'system'): ohne gesetztes
+   data-theme greift die prefers-color-scheme-Regel unten. */
 :root {
   --bg: #efe7d6;
   --bg-elev: #f6f0e2;
