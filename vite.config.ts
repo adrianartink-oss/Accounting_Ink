@@ -16,8 +16,8 @@ export default defineConfig({
         short_name: 'Buchhaltung',
         description:
           'Private Buchhaltung (EÜR) für Einzelunternehmer – Einnahmen/Ausgaben nach Land & Sphäre, mit Claude-Beleg-Scan.',
-        theme_color: '#0f766e',
-        background_color: '#0b0f0e',
+        theme_color: '#b3161a',
+        background_color: '#efe7d6',
         display: 'standalone',
         orientation: 'any',
         lang: 'de',

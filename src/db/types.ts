@@ -42,6 +42,15 @@ export interface Transaction {
   /** Referenz auf einen hinterlegten Beleg, falls vorhanden. */
   receiptId?: string
   source: TxSource
+  // ── Optionale Tattoo-Details (nur bei gewerblichen Einnahmen sinnvoll) ──
+  /** Motiv / Stil (z. B. „Fineline", „Traditional"). */
+  motif?: string
+  /** Körperstelle (z. B. „Unterarm"). */
+  bodyPart?: string
+  /** Größe als Freitext (z. B. „12×8 cm"). */
+  sizeText?: string
+  /** Arbeitsdauer in Minuten. */
+  durationMin?: number
   /** Epoch-Millisekunden. */
   createdAt: number
   updatedAt: number
@@ -125,4 +134,18 @@ export interface Settings {
   lastBackupAt?: number
   /** Nach wie vielen Tagen an ein Backup erinnert wird (0 = aus). */
   backupReminderDays: number
+  // ── Betriebs-Stammdaten (Studio) ──
+  taxNumber?: string
+  vatId?: string
+  /** Datum der Gewerbeanmeldung (YYYY-MM-DD). */
+  gewerbeStartDate?: string
+  /** Gesundheitsamt-/Hygiene-Registrierung (Freitext). */
+  healthOfficeReg?: string
+  /** Berufshaftpflicht / Versicherung (Freitext). */
+  insurance?: string
+  // ── Kennzahlen ──
+  /** Jahres-Umsatzziel in Cent. */
+  revenueTargetCents?: number
+  /** Manuell erfasster Vorjahresumsatz in Cent (für die §19-Prüfung). */
+  priorYearRevenueCents?: number
 }

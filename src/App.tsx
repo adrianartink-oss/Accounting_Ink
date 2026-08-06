@@ -6,6 +6,7 @@ import {
   ListChecks,
   ScanLine,
   PlusCircle,
+  Store,
   Settings as SettingsIcon,
 } from 'lucide-react'
 import { useSettings } from './store/hooks'
@@ -17,6 +18,7 @@ import Scan from './pages/Scan'
 import Reports from './pages/Reports'
 import Categories from './pages/Categories'
 import Recurring from './pages/Recurring'
+import Studio from './pages/Studio'
 import SettingsPage from './pages/SettingsPage'
 import Disclaimer from './components/Disclaimer'
 
@@ -26,6 +28,7 @@ const NAV = [
   { to: '/add', label: 'Erfassen', icon: PlusCircle, end: false },
   { to: '/scan', label: 'Scan', icon: ScanLine, end: false },
   { to: '/reports', label: 'Berichte', icon: BarChart3, end: false },
+  { to: '/studio', label: 'Studio', icon: Store, end: false },
   { to: '/settings', label: 'Einstellungen', icon: SettingsIcon, end: false },
 ] as const
 
@@ -54,7 +57,7 @@ export default function App() {
         style={{ borderColor: 'var(--border)', background: 'var(--bg-elev)' }}
       >
         <div className="mb-6 px-2">
-          <div className="text-xl font-bold" style={{ color: 'var(--fg)' }}>
+          <div className="font-brand text-2xl" style={{ color: 'var(--accent)' }}>
             Buchhaltung
           </div>
           <div className="text-sm" style={{ color: 'var(--muted)' }}>
@@ -78,6 +81,7 @@ export default function App() {
             <Route path="/reports" element={<Reports />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/recurring" element={<Recurring />} />
+            <Route path="/studio" element={<Studio />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </div>

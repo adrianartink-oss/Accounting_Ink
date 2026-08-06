@@ -139,17 +139,27 @@ export async function generateDueRecurring(): Promise<number> {
 
 /** Erstellt ein Backup-Objekt aus allen Buchungen und Kategorien. */
 export async function buildBackup(): Promise<BackupData> {
-  const [transactions, categories, recurring] = await Promise.all([
+  const [transactions, categories, recurring, settings] = await Promise.all([
     db.transactions.toArray(),
     db.categories.toArray(),
     db.recurring.toArray(),
+    db.settings.get('singleton'),
   ])
+  // API-Key nicht mitsichern.
+  const safeSettings = settings
+    ? (() => {
+        const { apiKeyEncrypted: _omit, ...rest } = settings
+        void _omit
+        return rest
+      })()
+    : undefined
   return {
     version: 1,
     exportedAt: new Date().toISOString(),
     transactions,
     categories,
     recurring,
+    settings: safeSettings,
   }
 }
 
@@ -175,6 +185,16 @@ export async function importBackup(
     if (data.transactions?.length) await db.transactions.bulkPut(data.transactions)
     if (data.recurring?.length) await db.recurring.bulkPut(data.recurring)
   })
+
+  // Stammdaten/Kennzahlen wiederherstellen, aber den lokalen API-Key behalten.
+  if (data.settings) {
+    const current = await db.settings.get('singleton')
+    await db.settings.put({
+      ...data.settings,
+      id: 'singleton',
+      apiKeyEncrypted: current?.apiKeyEncrypted,
+    })
+  }
   return {
     transactions: data.transactions.length,
     categories: data.categories?.length ?? 0,

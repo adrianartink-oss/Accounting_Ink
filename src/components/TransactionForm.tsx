@@ -16,6 +16,10 @@ export interface TransactionFormValues {
   counterparty: string
   description: string
   vatRateBps?: number | null
+  motif?: string
+  bodyPart?: string
+  sizeText?: string
+  durationMin?: number
 }
 
 function today(): string {
@@ -49,6 +53,13 @@ export default function TransactionForm({
   const [date, setDate] = useState(initial?.date ?? today())
   const [counterparty, setCounterparty] = useState(initial?.counterparty ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
+  // Tattoo-Details (nur bei gewerblichen Einnahmen)
+  const [motif, setMotif] = useState(initial?.motif ?? '')
+  const [bodyPart, setBodyPart] = useState(initial?.bodyPart ?? '')
+  const [sizeText, setSizeText] = useState(initial?.sizeText ?? '')
+  const [durationHours, setDurationHours] = useState(
+    initial?.durationMin ? centsToInputString(Math.round((initial.durationMin / 60) * 100)) : '',
+  )
   const [vatRateBps, setVatRateBps] = useState<number>(
     initial?.vatRateBps ?? defaultVatBps(initial?.country ?? settings.defaultCountry),
   )
@@ -88,6 +99,11 @@ export default function TransactionForm({
       setError('Bitte eine Kategorie wählen.')
       return
     }
+    const isTattoo = type === 'income' && sphere === 'business'
+    const hoursParsed = parseAmountToCents(durationHours)
+    const durationMin =
+      isTattoo && hoursParsed != null && hoursParsed > 0 ? Math.round(hoursParsed * 0.6) : undefined
+
     setSaving(true)
     try {
       await onSave({
@@ -103,6 +119,10 @@ export default function TransactionForm({
         description: description.trim(),
         receiptId,
         source: 'manual',
+        motif: isTattoo && motif.trim() ? motif.trim() : undefined,
+        bodyPart: isTattoo && bodyPart.trim() ? bodyPart.trim() : undefined,
+        sizeText: isTattoo && sizeText.trim() ? sizeText.trim() : undefined,
+        durationMin,
       })
     } finally {
       setSaving(false)
@@ -257,6 +277,43 @@ export default function TransactionForm({
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
+
+      {/* Tattoo-Details (nur bei gewerblichen Einnahmen) */}
+      {type === 'income' && sphere === 'business' && (
+        <div
+          className="rounded-xl border p-3"
+          style={{ borderColor: 'var(--border)', background: 'var(--bg-elev)' }}
+        >
+          <span className="label !mb-2">Tattoo-Details (optional)</span>
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              className="input"
+              placeholder="Motiv / Stil"
+              value={motif}
+              onChange={(e) => setMotif(e.target.value)}
+            />
+            <input
+              className="input"
+              placeholder="Körperstelle"
+              value={bodyPart}
+              onChange={(e) => setBodyPart(e.target.value)}
+            />
+            <input
+              className="input"
+              placeholder="Größe (z. B. 12×8 cm)"
+              value={sizeText}
+              onChange={(e) => setSizeText(e.target.value)}
+            />
+            <input
+              className="input"
+              inputMode="decimal"
+              placeholder="Dauer (Std.)"
+              value={durationHours}
+              onChange={(e) => setDurationHours(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
 
       {error && (
         <p className="text-sm" style={{ color: 'var(--expense)' }}>
