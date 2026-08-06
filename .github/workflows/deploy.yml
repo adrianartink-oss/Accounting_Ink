@@ -36,7 +36,10 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Build (mit Pages-Basispfad)
-        run: npm run build -- --base=/Buchaltung_Software_priv/
+        # Basispfad = Repo-Name, damit die Assets unter der Pages-URL
+        # https://<owner>.github.io/<repo>/ korrekt geladen werden. Wird aus
+        # dem Repo-Namen abgeleitet, damit eine Umbenennung nichts bricht.
+        run: npm run build -- --base="/${{ github.event.repository.name }}/"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
