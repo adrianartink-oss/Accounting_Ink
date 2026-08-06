@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { Sparkles } from 'lucide-react'
 import type { Category, Transaction } from '../db/types'
 import { formatCents } from '../lib/money'
+import { countryShortLabel } from '../lib/countries'
 import CategoryIcon from './CategoryIcon'
 
 /** Eine Zeile in der Buchungsliste. Tippen öffnet die Bearbeitung. */
@@ -37,7 +38,7 @@ export default function TransactionRow({
           {tx.source === 'ai' && <Sparkles size={13} color="var(--accent)" />}
         </div>
         <div className="truncate text-sm" style={{ color: 'var(--muted)' }}>
-          {category?.name ?? 'Unbekannt'} · {tx.country} ·{' '}
+          {category?.name ?? 'Unbekannt'} · {countryShortLabel(tx.country)} ·{' '}
           {tx.sphere === 'business' ? 'Gewerblich' : 'Privat'}
         </div>
       </div>
@@ -48,7 +49,7 @@ export default function TransactionRow({
           style={{ color: isIncome ? 'var(--income)' : 'var(--fg)' }}
         >
           {isIncome ? '+' : '−'}
-          {formatCents(tx.amountCents)}
+          {formatCents(tx.amountCents, tx.currency)}
         </div>
         <div className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>
           {formatDate(tx.date)}

@@ -12,6 +12,7 @@ import {
   yearlyBusinessNet,
 } from '../lib/stats'
 import { centsToInputString, formatCents, parseAmountToCents } from '../lib/money'
+import { EU_COUNTRIES } from '../lib/countries'
 import type { Country, Settings } from '../db/types'
 import PageHeader from '../components/PageHeader'
 import StatTile from '../components/StatTile'
@@ -199,8 +200,11 @@ function StudioInner({ settings, txs }: { settings: Settings; txs: ReturnType<ty
                 value={settings.defaultCountry}
                 onChange={(e) => patch({ defaultCountry: e.target.value as Country })}
               >
-                <option value="DE">🇩🇪 Deutschland</option>
-                <option value="ES">🇪🇸 Spanien</option>
+                {EU_COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.flag} {c.name}
+                  </option>
+                ))}
               </select>
             </div>
             <button
