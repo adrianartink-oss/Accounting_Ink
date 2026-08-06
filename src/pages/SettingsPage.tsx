@@ -18,6 +18,7 @@ import { buildBackup, clearAllData, importBackup } from '../db/repo'
 import { downloadBlob, transactionsToCsv, type BackupData } from '../lib/export'
 import type { AiModel } from '../db/types'
 import PageHeader from '../components/PageHeader'
+import AppLockSetup from '../components/AppLockSetup'
 
 export default function SettingsPage() {
   const settings = useSettings()
@@ -50,6 +51,10 @@ export default function SettingsPage() {
           </button>
           .
         </p>
+      </Section>
+
+      <Section title="Sicherheit · App-Sperre">
+        <AppLockSetup />
       </Section>
 
       <ApiKeySection />

@@ -208,3 +208,13 @@ export async function clearAllData(): Promise<void> {
     await db.receipts.clear()
   })
 }
+
+/**
+ * Setzt die App vollständig zurück: löscht die gesamte lokale Datenbank
+ * (Buchungen, Belege, Kategorien, wiederkehrende Regeln, Einstellungen).
+ * Genutzt als Notausgang, wenn das App-Passwort vergessen wurde. Nach dem
+ * Aufruf sollte die Seite neu geladen werden (ensureSeeded legt Defaults an).
+ */
+export async function wipeAllData(): Promise<void> {
+  await db.delete()
+}
