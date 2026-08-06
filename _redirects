@@ -1,0 +1,4 @@
+# SPA-Fallback für Netlify & Cloudflare Pages.
+# Greift nur, wenn keine echte Datei passt (Assets/Manifest/SW bleiben unberührt).
+# Für Hash-Routing nicht zwingend nötig, aber robust bei direkten Aufrufen.
+/*    /index.html   200

@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/Accounting_Ink/sw.js', { scope: '/Accounting_Ink/' })})}
