@@ -73,9 +73,6 @@ export default function App() {
           <div className="font-brand text-2xl" style={{ color: 'var(--accent)' }}>
             Buchhaltung
           </div>
-          <div className="text-sm" style={{ color: 'var(--muted)' }}>
-            EÜR · DE / ES
-          </div>
         </div>
         {NAV.map((item) => (
           <SideNavItem key={item.to} {...item} />

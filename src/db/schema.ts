@@ -42,8 +42,9 @@ export const defaultSettings: Settings = {
   address: '',
   aiModel: 'claude-opus-4-8',
   disclaimerAccepted: false,
-  // Signatur-Look ist der helle Creme-Modus (Old-School-Flash).
-  theme: 'light',
+  // Standard: dem Systemthema des Geräts folgen (dunkel → dunkel, hell → hell).
+  // Manuell umstellbar unter Einstellungen → Darstellung.
+  theme: 'system',
   backupReminderDays: 14,
 }
 
