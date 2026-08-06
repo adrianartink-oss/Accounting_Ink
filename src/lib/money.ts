@@ -8,6 +8,16 @@ export function formatCents(amountCents: number, currency: Currency = 'EUR'): st
   }).format(amountCents / 100)
 }
 
+/** Liefert das Währungssymbol (z. B. „€", „kr", „zł") für eine Währung. */
+export function currencySymbol(currency: Currency = 'EUR'): string {
+  const parts = new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 0,
+  }).formatToParts(0)
+  return parts.find((p) => p.type === 'currency')?.value ?? currency
+}
+
 /** Formatiert Cent-Beträge mit explizitem Vorzeichen (+/−). */
 export function formatSignedCents(
   amountCents: number,

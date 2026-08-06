@@ -1,5 +1,6 @@
 import type { TxFilter } from '../lib/euer'
 import type { Country, Sphere } from '../db/types'
+import { EU_COUNTRIES } from '../lib/countries'
 
 /** Chip-Filter für Land, Sphäre und Jahr. */
 export default function FilterBar({
@@ -13,17 +14,21 @@ export default function FilterBar({
 }) {
   return (
     <div className="mb-5 space-y-2">
-      <ChipRow>
-        <Chip active={filter.country === 'ALL' || !filter.country} onClick={() => onChange({ country: 'ALL' })}>
-          Alle Länder
-        </Chip>
-        <Chip active={filter.country === 'DE'} onClick={() => onChange({ country: 'DE' as Country })}>
-          🇩🇪 Deutschland
-        </Chip>
-        <Chip active={filter.country === 'ES'} onClick={() => onChange({ country: 'ES' as Country })}>
-          🇪🇸 Spanien
-        </Chip>
-      </ChipRow>
+      <select
+        className="input"
+        value={filter.country ?? 'ALL'}
+        onChange={(e) =>
+          onChange({ country: e.target.value === 'ALL' ? 'ALL' : (e.target.value as Country) })
+        }
+        aria-label="Land filtern"
+      >
+        <option value="ALL">🌍 Alle Länder</option>
+        {EU_COUNTRIES.map((c) => (
+          <option key={c.code} value={c.code}>
+            {c.flag} {c.name}
+          </option>
+        ))}
+      </select>
 
       <ChipRow>
         <Chip active={filter.sphere === 'ALL' || !filter.sphere} onClick={() => onChange({ sphere: 'ALL' })}>

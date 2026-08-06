@@ -1,4 +1,5 @@
 import type { Country, Transaction } from '../db/types'
+import { EU_COUNTRIES, countryInfo } from './countries'
 
 /** Netto/USt-Aufteilung eines Bruttobetrags. */
 export interface VatSplit {
@@ -27,24 +28,25 @@ export interface VatRateOption {
   bps: number
 }
 
-/** Länderabhängige USt-Sätze (DE: 19/7/0, ES/IVA: 21/10/4/0). */
-export const VAT_RATES: Record<Country, VatRateOption[]> = {
-  DE: [
-    { label: '19 %', bps: 1900 },
-    { label: '7 %', bps: 700 },
-    { label: '0 %', bps: 0 },
-  ],
-  ES: [
-    { label: '21 %', bps: 2100 },
-    { label: '10 %', bps: 1000 },
-    { label: '4 %', bps: 400 },
-    { label: '0 %', bps: 0 },
-  ],
+/** Formatiert Basispunkte als Prozent-Label, z. B. 2550 → „25,5 %". */
+function vatLabel(bps: number): string {
+  return `${(bps / 100).toLocaleString('de-DE')} %`
 }
+
+/**
+ * Länderabhängige USt-/MwSt-Sätze, abgeleitet aus der EU-Länder-Registry:
+ * Standardsatz, ermäßigte Sätze und 0 %.
+ */
+export const VAT_RATES: Record<Country, VatRateOption[]> = Object.fromEntries(
+  EU_COUNTRIES.map((c) => [
+    c.code,
+    [c.standardVatBps, ...c.reducedVatBps, 0].map((bps) => ({ label: vatLabel(bps), bps })),
+  ]),
+) as Record<Country, VatRateOption[]>
 
 /** Standard-USt-Satz je Land (für neue Regelbesteuerungs-Buchungen). */
 export function defaultVatBps(country: Country): number {
-  return country === 'ES' ? 2100 : 1900
+  return countryInfo(country)?.standardVatBps ?? 1900
 }
 
 /** USt-Kennzahlen für die Umsatzsteuer-Voranmeldung. */

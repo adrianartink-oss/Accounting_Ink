@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Trash2 } from 'lucide-react'
-import type { Category, Country, Settings, Sphere, TxType } from '../db/types'
+import type { Category, Country, Currency, Settings, Sphere, TxType } from '../db/types'
 import type { TransactionInput } from '../db/repo'
-import { centsToInputString, formatCents, parseAmountToCents } from '../lib/money'
+import { centsToInputString, currencySymbol, formatCents, parseAmountToCents } from '../lib/money'
 import { VAT_RATES, defaultVatBps, splitGross } from '../lib/vat'
+import { EU_COUNTRIES, currencyForCountry } from '../lib/countries'
 import CategoryIcon from './CategoryIcon'
 
 export interface TransactionFormValues {
@@ -72,6 +73,9 @@ export default function TransactionForm({
     ? vatRateBps
     : defaultVatBps(country)
 
+  // Währung ergibt sich aus dem gewählten Land (EUR bzw. Landeswährung).
+  const currency = currencyForCountry(country)
+
   const options = useMemo(
     () => categories.filter((c) => c.kind === type && c.sphere === sphere),
     [categories, type, sphere],
@@ -112,7 +116,7 @@ export default function TransactionForm({
         country,
         categoryId: effectiveCategoryId,
         amountCents: cents,
-        currency: 'EUR',
+        currency,
         vatRateBps: settings.kleinunternehmer ? null : effectiveVatBps,
         date,
         counterparty: counterparty.trim(),
@@ -144,7 +148,7 @@ export default function TransactionForm({
       {/* Betrag */}
       <div>
         <label className="label" htmlFor="amount">
-          Betrag (€)
+          Betrag ({currencySymbol(currency)})
         </label>
         <input
           id="amount"
@@ -173,7 +177,11 @@ export default function TransactionForm({
               </button>
             ))}
           </div>
-          <VatPreview grossCents={parseAmountToCents(amount) ?? 0} rateBps={effectiveVatBps} />
+          <VatPreview
+            grossCents={parseAmountToCents(amount) ?? 0}
+            rateBps={effectiveVatBps}
+            currency={currency}
+          />
         </div>
       )}
 
@@ -191,15 +199,21 @@ export default function TransactionForm({
           />
         </div>
         <div>
-          <span className="label">Land</span>
-          <Segmented
+          <label className="label" htmlFor="country">
+            Land
+          </label>
+          <select
+            id="country"
+            className="input"
             value={country}
-            onChange={(v) => setCountry(v)}
-            options={[
-              { value: 'DE', label: '🇩🇪 DE' },
-              { value: 'ES', label: '🇪🇸 ES' },
-            ]}
-          />
+            onChange={(e) => setCountry(e.target.value as Country)}
+          >
+            {EU_COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.flag} {c.name} ({c.currency})
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -340,14 +354,22 @@ export default function TransactionForm({
   )
 }
 
-function VatPreview({ grossCents, rateBps }: { grossCents: number; rateBps: number }) {
+function VatPreview({
+  grossCents,
+  rateBps,
+  currency,
+}: {
+  grossCents: number
+  rateBps: number
+  currency: Currency
+}) {
   if (grossCents <= 0) return null
   const { netCents, vatCents } = splitGross(grossCents, rateBps)
   return (
     <div className="mt-2 flex justify-between text-xs" style={{ color: 'var(--muted)' }}>
-      <span>Netto: {formatCents(netCents)}</span>
-      <span>USt: {formatCents(vatCents)}</span>
-      <span>Brutto: {formatCents(grossCents)}</span>
+      <span>Netto: {formatCents(netCents, currency)}</span>
+      <span>USt: {formatCents(vatCents, currency)}</span>
+      <span>Brutto: {formatCents(grossCents, currency)}</span>
     </div>
   )
 }

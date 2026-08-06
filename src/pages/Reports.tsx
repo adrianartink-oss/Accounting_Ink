@@ -12,6 +12,7 @@ import {
 import { vatSummary } from '../lib/vat'
 import { MissingApiKeyError, summarizePeriod } from '../lib/anthropic'
 import { formatCents, formatSignedCents } from '../lib/money'
+import { countryLabel } from '../lib/countries'
 import { downloadBlob, transactionsToCsv } from '../lib/export'
 import PageHeader from '../components/PageHeader'
 import FilterBar from '../components/FilterBar'
@@ -41,7 +42,7 @@ export default function Reports() {
 
   const periodLabel = [
     filter.year === 'ALL' ? 'Alle Jahre' : String(filter.year),
-    filter.country === 'ALL' ? 'DE+ES' : filter.country,
+    !filter.country || filter.country === 'ALL' ? 'Alle Länder' : countryLabel(filter.country),
     filter.sphere === 'business' ? 'Gewerblich' : filter.sphere === 'private' ? 'Privat' : 'Alle',
   ].join(' · ')
 
@@ -72,7 +73,7 @@ export default function Reports() {
     const csv = transactionsToCsv(filtered, categories)
     const scope = [
       filter.year === 'ALL' ? 'alle' : filter.year,
-      filter.country === 'ALL' ? 'DE-ES' : filter.country,
+      filter.country === 'ALL' ? 'EU' : filter.country,
     ].join('_')
     downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `euer_${scope}.csv`)
   }
@@ -109,7 +110,10 @@ export default function Reports() {
               <div className="text-sm" style={{ color: 'var(--muted)' }}>
                 {settings.businessName || 'Einzelunternehmen'} ·{' '}
                 {filter.year === 'ALL' ? 'Alle Jahre' : filter.year} ·{' '}
-                {filter.country === 'ALL' ? 'DE + ES' : filter.country} ·{' '}
+                {!filter.country || filter.country === 'ALL'
+                  ? 'Alle Länder'
+                  : countryLabel(filter.country)}{' '}
+                ·{' '}
                 {filter.sphere === 'business'
                   ? 'Gewerblich'
                   : filter.sphere === 'private'

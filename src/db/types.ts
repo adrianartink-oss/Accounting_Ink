@@ -6,14 +6,48 @@ export type TxType = 'income' | 'expense'
 /** Sphäre: gewerblich oder privat. */
 export type Sphere = 'business' | 'private'
 
-/** Land der Buchung (Steuer-/Umzugstrennung DE ↔ ES). */
-export type Country = 'DE' | 'ES'
+/**
+ * Land der Buchung (ISO-3166-1 alpha-2). Unterstützt werden alle 27 EU-Länder.
+ * Die zugehörigen Stammdaten (Name, Flagge, Währung, USt-Sätze) liegen zentral
+ * in `src/lib/countries.ts`.
+ */
+export type Country =
+  | 'AT'
+  | 'BE'
+  | 'BG'
+  | 'HR'
+  | 'CY'
+  | 'CZ'
+  | 'DK'
+  | 'EE'
+  | 'FI'
+  | 'FR'
+  | 'DE'
+  | 'GR'
+  | 'HU'
+  | 'IE'
+  | 'IT'
+  | 'LV'
+  | 'LT'
+  | 'LU'
+  | 'MT'
+  | 'NL'
+  | 'PL'
+  | 'PT'
+  | 'RO'
+  | 'SK'
+  | 'SI'
+  | 'ES'
+  | 'SE'
 
 /** Herkunft eines Datensatzes. */
 export type TxSource = 'manual' | 'ai' | 'recurring'
 
-/** Unterstützte Währungen (ISO-4217). */
-export type Currency = 'EUR'
+/**
+ * Unterstützte Währungen (ISO-4217). Euro plus die Landeswährungen der
+ * EU-Länder, die (noch) nicht dem Euro-Raum angehören.
+ */
+export type Currency = 'EUR' | 'CZK' | 'DKK' | 'HUF' | 'PLN' | 'RON' | 'SEK'
 
 /**
  * Eine einzelne Buchung (Einnahme oder Ausgabe).
