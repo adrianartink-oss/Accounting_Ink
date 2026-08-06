@@ -20,6 +20,7 @@ import {
   type TxFilter,
 } from '../lib/euer'
 import { formatCents, formatSignedCents } from '../lib/money'
+import { COUNTRY_CODES, countryLabel } from '../lib/countries'
 import PageHeader from '../components/PageHeader'
 import FilterBar from '../components/FilterBar'
 import StatTile from '../components/StatTile'
@@ -57,9 +58,11 @@ export default function Dashboard() {
   )
 
   // Länder-Aufteilung (Überschuss), unabhängig vom Länderfilter.
+  // Nur Länder anzeigen, in denen tatsächlich Buchungen existieren.
   const perCountry = useMemo(() => {
     const base = filterTransactions(txs, { ...filter, country: 'ALL' })
-    return (['DE', 'ES'] as const).map((c) => ({
+    const codes = COUNTRY_CODES.filter((c) => base.some((t) => t.country === c))
+    return codes.map((c) => ({
       country: c,
       ...summarize(base.filter((t) => t.country === c)),
     }))
@@ -144,7 +147,7 @@ export default function Dashboard() {
           <div key={c.country} className="card !p-4">
             <div className="mb-2 flex items-center justify-between">
               <span className="font-semibold" style={{ color: 'var(--fg)' }}>
-                {c.country === 'DE' ? '🇩🇪 Deutschland' : '🇪🇸 Spanien'}
+                {countryLabel(c.country)}
               </span>
               <span
                 className="font-semibold tabular-nums"

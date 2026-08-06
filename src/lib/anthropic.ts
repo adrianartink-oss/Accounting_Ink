@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import type { AiModel, Category, Country, Sphere, TxType } from '../db/types'
 import { decryptString, getDeviceSecret } from '../db/crypto'
 import type { Settings } from '../db/types'
+import { COUNTRY_CODES, isCountry } from './countries'
 
 /** Ergebnis einer KI-Extraktion (Beleg-Scan oder Freitext). */
 export interface Extraction {
@@ -65,8 +66,9 @@ const extractionTool = (categories: Category[]): Anthropic.Tool => ({
       },
       country: {
         type: 'string',
-        enum: ['DE', 'ES'],
-        description: 'Land der Buchung (Deutschland DE oder Spanien ES).',
+        enum: COUNTRY_CODES,
+        description:
+          'Land der Buchung als ISO-3166-1 alpha-2 Code eines EU-Landes (z. B. DE, ES, FR, IT).',
       },
       categoryId: {
         type: 'string',
@@ -125,7 +127,7 @@ function normalize(input: RawToolInput, categories: Category[]): Extraction {
     amountCents: Math.max(0, Math.round((Number(input.amount) || 0) * 100)),
     type: input.type === 'income' ? 'income' : 'expense',
     sphere: input.sphere === 'private' ? 'private' : 'business',
-    country: input.country === 'ES' ? 'ES' : 'DE',
+    country: isCountry(input.country) ? input.country : 'DE',
     categoryId,
     counterparty: input.counterparty ?? '',
     description: input.description ?? '',
@@ -177,7 +179,8 @@ export async function scanReceipt(
               `Heutiges Datum: ${new Date().toISOString().slice(0, 10)}.\n` +
               `Verfügbare Kategorien:\n${categoryCatalog(categories)}\n\n` +
               `Erfasse die Buchung über das Tool record_transaction. Wähle die passendste ` +
-              `Kategorie-ID. Ordne Land (DE/ES) und Sphäre (gewerblich/privat) bestmöglich zu.`,
+              `Kategorie-ID. Ordne das EU-Land (ISO-Code, z. B. DE/ES/FR) und die Sphäre ` +
+              `(gewerblich/privat) bestmöglich zu.`,
           },
         ],
       },

@@ -6,6 +6,7 @@ import { addRecurring, deleteRecurring, generateDueRecurring, updateRecurring } 
 import { INTERVAL_LABEL, todayIso } from '../lib/recurring'
 import { defaultVatBps } from '../lib/vat'
 import { formatCents, parseAmountToCents } from '../lib/money'
+import { EU_COUNTRIES, countryShortLabel, currencyForCountry } from '../lib/countries'
 import type { Country, RecurringInterval, Sphere, TxType } from '../db/types'
 import PageHeader from '../components/PageHeader'
 import CategoryIcon from '../components/CategoryIcon'
@@ -61,7 +62,8 @@ export default function Recurring() {
                     {r.counterparty || cat?.name || 'Buchung'}
                   </div>
                   <div className="truncate text-sm" style={{ color: 'var(--muted)' }}>
-                    {INTERVAL_LABEL[r.interval]} · nächste: {formatDate(r.nextDate)} · {r.country}
+                    {INTERVAL_LABEL[r.interval]} · nächste: {formatDate(r.nextDate)} ·{' '}
+                    {countryShortLabel(r.country)}
                   </div>
                 </div>
                 <div className="text-right">
@@ -70,7 +72,7 @@ export default function Recurring() {
                     style={{ color: r.type === 'income' ? 'var(--income)' : 'var(--fg)' }}
                   >
                     {r.type === 'income' ? '+' : '−'}
-                    {formatCents(r.amountCents)}
+                    {formatCents(r.amountCents, r.currency)}
                   </div>
                 </div>
                 <button
@@ -152,7 +154,7 @@ function AddRuleForm({ onClose }: { onClose: () => void }) {
       country,
       categoryId: effectiveCategoryId,
       amountCents: cents,
-      currency: 'EUR',
+      currency: currencyForCountry(country),
       vatRateBps: settings.kleinunternehmer ? null : defaultVatBps(country),
       counterparty: counterparty.trim(),
       description: description.trim(),
@@ -207,8 +209,11 @@ function AddRuleForm({ onClose }: { onClose: () => void }) {
             value={country}
             onChange={(e) => setCountry(e.target.value as Country)}
           >
-            <option value="DE">🇩🇪 Deutschland</option>
-            <option value="ES">🇪🇸 Spanien</option>
+            {EU_COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.flag} {c.name}
+              </option>
+            ))}
           </select>
         </div>
 
