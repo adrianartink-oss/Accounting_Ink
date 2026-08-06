@@ -162,6 +162,8 @@ export interface Settings {
   apiKeyEncrypted?: string
   aiModel: AiModel
   disclaimerAccepted: boolean
+  /** Erst-Start-Onboarding abgeschlossen (lokal, Backup, App-Sperre). */
+  onboardingDone?: boolean
   /** Farbschema. */
   theme: 'system' | 'light' | 'dark'
   /** Zeitpunkt des letzten Backups (Epoch ms). */

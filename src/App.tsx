@@ -10,6 +10,7 @@ import {
   Settings as SettingsIcon,
 } from 'lucide-react'
 import { useSettings } from './store/hooks'
+import { useAppLock } from './store/useAppLock'
 import { updateSettings } from './db/schema'
 import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
@@ -21,6 +22,8 @@ import Recurring from './pages/Recurring'
 import Studio from './pages/Studio'
 import SettingsPage from './pages/SettingsPage'
 import Disclaimer from './components/Disclaimer'
+import Onboarding from './components/Onboarding'
+import LockScreen from './components/LockScreen'
 
 const NAV = [
   { to: '/', label: 'Übersicht', icon: LayoutDashboard, end: true },
@@ -44,9 +47,19 @@ function useThemeEffect() {
 export default function App() {
   useThemeEffect()
   const settings = useSettings()
+  const { locked, unlock } = useAppLock()
+
+  // App-Sperre zuerst – auch für wiederkehrende Nutzer sofort sichtbar.
+  if (locked) {
+    return <LockScreen onUnlock={unlock} />
+  }
 
   if (!settings.disclaimerAccepted) {
     return <Disclaimer onAccept={() => updateSettings({ disclaimerAccepted: true })} />
+  }
+
+  if (!settings.onboardingDone) {
+    return <Onboarding onDone={() => updateSettings({ onboardingDone: true })} />
   }
 
   return (
