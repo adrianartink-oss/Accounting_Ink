@@ -1,4 +1,5 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Sparkles } from 'lucide-react'
 import { useCategories, useSettings, useTransaction } from '../store/hooks'
 import {
@@ -19,6 +20,7 @@ interface AddState {
 }
 
 export default function AddTransaction() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
@@ -34,9 +36,9 @@ export default function AddTransaction() {
   if (isEdit && !existing) {
     return (
       <div>
-        <BackHeader title="Buchung" onBack={() => navigate(-1)} />
+        <BackHeader title={t('addTransaction.transaction')} onBack={() => navigate(-1)} />
         <div className="card text-center" style={{ color: 'var(--muted)' }}>
-          Wird geladen…
+          {t('common.loading')}
         </div>
       </div>
     )
@@ -76,7 +78,7 @@ export default function AddTransaction() {
 
   async function handleDelete() {
     if (!id) return
-    if (confirm('Diese Buchung wirklich löschen?')) {
+    if (confirm(t('addTransaction.confirmDelete'))) {
       await deleteTransaction(id)
       navigate('/transactions')
     }
@@ -85,8 +87,8 @@ export default function AddTransaction() {
   return (
     <div>
       <BackHeader
-        title={isEdit ? 'Buchung bearbeiten' : 'Buchung erfassen'}
-        subtitle={state.fromAi ? 'Von der KI vorausgefüllt – bitte prüfen' : undefined}
+        title={isEdit ? t('addTransaction.editTitle') : t('addTransaction.createTitle')}
+        subtitle={state.fromAi ? t('addTransaction.aiPrefill') : undefined}
         onBack={() => navigate(-1)}
         ai={state.fromAi}
       />
@@ -96,7 +98,7 @@ export default function AddTransaction() {
           settings={settings}
           initial={initial}
           receiptId={state.receiptId ?? existing?.receiptId}
-          submitLabel={isEdit ? 'Änderungen speichern' : 'Buchung speichern'}
+          submitLabel={isEdit ? t('addTransaction.saveChanges') : t('addTransaction.saveTransaction')}
           onSave={handleSave}
           onDelete={isEdit ? handleDelete : undefined}
         />
@@ -116,6 +118,7 @@ function BackHeader({
   onBack: () => void
   ai?: boolean
 }) {
+  const { t } = useTranslation()
   return (
     <div className="mb-2">
       <button
@@ -123,7 +126,7 @@ function BackHeader({
         className="mb-2 flex items-center gap-1 text-sm font-medium"
         style={{ color: 'var(--muted)' }}
       >
-        <ArrowLeft size={16} /> Zurück
+        <ArrowLeft size={16} /> {t('common.back')}
       </button>
       <PageHeader
         title={title}

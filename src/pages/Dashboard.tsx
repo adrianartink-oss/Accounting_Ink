@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Bar,
   BarChart,
@@ -21,12 +22,15 @@ import {
 } from '../lib/euer'
 import { formatCents, formatSignedCents } from '../lib/money'
 import { COUNTRY_CODES, countryLabel } from '../lib/countries'
+import { useCategoryName } from '../i18n/useCategoryName'
 import PageHeader from '../components/PageHeader'
 import FilterBar from '../components/FilterBar'
 import StatTile from '../components/StatTile'
 import CategoryIcon from '../components/CategoryIcon'
 
 export default function Dashboard() {
+  const { t } = useTranslation()
+  const categoryName = useCategoryName()
   const txs = useTransactions()
   const categories = useCategories()
   const navigate = useNavigate()
@@ -51,8 +55,8 @@ export default function Dashboard() {
         chartYear,
       ).map((m) => ({
         label: m.label,
-        Einnahmen: m.incomeCents / 100,
-        Ausgaben: m.expenseCents / 100,
+        income: m.incomeCents / 100,
+        expenses: m.expenseCents / 100,
       })),
     [txs, filter, chartYear],
   )
@@ -76,43 +80,40 @@ export default function Dashboard() {
 
   return (
     <div>
-      <PageHeader
-        title="Übersicht"
-        subtitle="Einnahmen, Ausgaben und Überschuss auf einen Blick"
-      />
+      <PageHeader title={t('dashboard.title')} subtitle={t('dashboard.subtitle')} />
 
       <FilterBar filter={filter} onChange={(p) => setFilter((f) => ({ ...f, ...p }))} years={years} />
 
       {/* Kennzahlen */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <StatTile
-          label="Einnahmen"
+          label={t('dashboard.income')}
           value={formatCents(summary.incomeCents)}
           accent="var(--income)"
           icon={<ArrowUpRight size={18} color="var(--income)" />}
         />
         <StatTile
-          label="Ausgaben"
+          label={t('dashboard.expenses')}
           value={formatCents(summary.expenseCents)}
           accent="var(--expense)"
           icon={<ArrowDownRight size={18} color="var(--expense)" />}
         />
         <StatTile
-          label="Überschuss (EÜR)"
+          label={t('dashboard.surplus')}
           value={formatSignedCents(summary.surplusCents)}
           accent={summary.surplusCents >= 0 ? 'var(--income)' : 'var(--expense)'}
           icon={<Scale size={18} color="var(--accent)" />}
-          hint={`${summary.count} Buchungen`}
+          hint={t('dashboard.bookings', { count: summary.count })}
         />
       </div>
 
       {/* Schnellaktionen */}
       <div className="mt-3 grid grid-cols-2 gap-3">
         <button className="btn" onClick={() => navigate('/add')}>
-          <PlusCircle size={18} color="var(--accent)" /> Buchung erfassen
+          <PlusCircle size={18} color="var(--accent)" /> {t('dashboard.addTransaction')}
         </button>
         <button className="btn" onClick={() => navigate('/scan')}>
-          <ScanLine size={18} color="var(--accent)" /> Beleg scannen
+          <ScanLine size={18} color="var(--accent)" /> {t('dashboard.scanReceipt')}
         </button>
       </div>
 
@@ -120,7 +121,7 @@ export default function Dashboard() {
       <div className="card mt-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold" style={{ color: 'var(--fg)' }}>
-            Monatsverlauf {chartYear}
+            {t('dashboard.monthlyTrend', { year: chartYear })}
           </h2>
         </div>
         {summary.count === 0 ? (
@@ -133,8 +134,8 @@ export default function Dashboard() {
                 <XAxis dataKey="label" tick={{ fill: 'var(--muted)', fontSize: 12 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: 'var(--muted)', fontSize: 12 }} axisLine={false} tickLine={false} width={48} />
                 <Tooltip content={<ChartTooltip />} cursor={{ fill: 'color-mix(in srgb, var(--muted) 12%, transparent)' }} />
-                <Bar dataKey="Einnahmen" fill="var(--income)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Ausgaben" fill="var(--expense)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="income" name={t('dashboard.income')} fill="var(--income)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expenses" name={t('dashboard.expenses')} fill="var(--expense)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -157,8 +158,8 @@ export default function Dashboard() {
               </span>
             </div>
             <div className="flex justify-between text-sm" style={{ color: 'var(--muted)' }}>
-              <span>Ein: {formatCents(c.incomeCents)}</span>
-              <span>Aus: {formatCents(c.expenseCents)}</span>
+              <span>{t('dashboard.income')}: {formatCents(c.incomeCents)}</span>
+              <span>{t('dashboard.expenses')}: {formatCents(c.expenseCents)}</span>
             </div>
           </div>
         ))}
@@ -168,7 +169,7 @@ export default function Dashboard() {
       {topExpenses.length > 0 && (
         <div className="card mt-5">
           <h2 className="mb-3 font-semibold" style={{ color: 'var(--fg)' }}>
-            Größte Ausgaben
+            {t('dashboard.topExpenses')}
           </h2>
           <div className="space-y-3">
             {topExpenses.map((line) => (
@@ -180,7 +181,7 @@ export default function Dashboard() {
                       size={16}
                       color={line.color}
                     />
-                    {line.categoryName}
+                    {categoryName({ id: line.categoryId, name: line.categoryName })}
                   </span>
                   <span className="tabular-nums" style={{ color: 'var(--muted)' }}>
                     {formatCents(line.amountCents)}
@@ -205,13 +206,14 @@ export default function Dashboard() {
 }
 
 function EmptyChart() {
+  const { t } = useTranslation()
   return (
     <div
       className="flex h-40 flex-col items-center justify-center gap-1 text-center text-sm"
       style={{ color: 'var(--muted)' }}
     >
-      <span>Noch keine Buchungen in diesem Zeitraum.</span>
-      <span>Erfasse deine erste Buchung, um Auswertungen zu sehen.</span>
+      <span>{t('dashboard.emptyTitle')}</span>
+      <span>{t('dashboard.emptySubtitle')}</span>
     </div>
   )
 }

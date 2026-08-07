@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Sparkles } from 'lucide-react'
 import type { Category, Transaction } from '../db/types'
-import { formatCents } from '../lib/money'
+import { formatCents, formatDate } from '../lib/money'
 import { countryShortLabel } from '../lib/countries'
+import { useCategoryName } from '../i18n/useCategoryName'
 import CategoryIcon from './CategoryIcon'
 
 /** Eine Zeile in der Buchungsliste. Tippen öffnet die Bearbeitung. */
@@ -14,6 +16,8 @@ export default function TransactionRow({
   category?: Category
 }) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const categoryName = useCategoryName()
   const isIncome = tx.type === 'income'
   const color = category?.color ?? 'var(--muted)'
 
@@ -38,8 +42,8 @@ export default function TransactionRow({
           {tx.source === 'ai' && <Sparkles size={13} color="var(--accent)" />}
         </div>
         <div className="truncate text-sm" style={{ color: 'var(--muted)' }}>
-          {category?.name ?? 'Unbekannt'} · {countryShortLabel(tx.country)} ·{' '}
-          {tx.sphere === 'business' ? 'Gewerblich' : 'Privat'}
+          {category ? categoryName(category) : '—'} · {countryShortLabel(tx.country)} ·{' '}
+          {t(tx.sphere === 'business' ? 'form.business' : 'form.private')}
         </div>
       </div>
 
@@ -57,9 +61,4 @@ export default function TransactionRow({
       </div>
     </button>
   )
-}
-
-function formatDate(iso: string): string {
-  const [y, m, d] = iso.split('-')
-  return `${d}.${m}.${y}`
 }

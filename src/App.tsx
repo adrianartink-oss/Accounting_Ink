@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import {
   BarChart3,
@@ -26,13 +27,13 @@ import Onboarding from './components/Onboarding'
 import LockScreen from './components/LockScreen'
 
 const NAV = [
-  { to: '/', label: 'Übersicht', icon: LayoutDashboard, end: true },
-  { to: '/transactions', label: 'Buchungen', icon: ListChecks, end: false },
-  { to: '/add', label: 'Erfassen', icon: PlusCircle, end: false },
-  { to: '/scan', label: 'Scan', icon: ScanLine, end: false },
-  { to: '/reports', label: 'Berichte', icon: BarChart3, end: false },
-  { to: '/studio', label: 'Studio', icon: Store, end: false },
-  { to: '/settings', label: 'Einstellungen', icon: SettingsIcon, end: false },
+  { to: '/', labelKey: 'nav.overview', icon: LayoutDashboard, end: true },
+  { to: '/transactions', labelKey: 'nav.transactions', icon: ListChecks, end: false },
+  { to: '/add', labelKey: 'nav.add', icon: PlusCircle, end: false },
+  { to: '/scan', labelKey: 'nav.scan', icon: ScanLine, end: false },
+  { to: '/reports', labelKey: 'nav.reports', icon: BarChart3, end: false },
+  { to: '/studio', labelKey: 'nav.studio', icon: Store, end: false },
+  { to: '/settings', labelKey: 'nav.settings', icon: SettingsIcon, end: false },
 ] as const
 
 function useThemeEffect() {
@@ -46,6 +47,7 @@ function useThemeEffect() {
 
 export default function App() {
   useThemeEffect()
+  const { t } = useTranslation()
   const settings = useSettings()
   const { locked, unlock } = useAppLock()
 
@@ -71,11 +73,17 @@ export default function App() {
       >
         <div className="mb-6 px-2">
           <div className="font-brand text-2xl" style={{ color: 'var(--accent)' }}>
-            Buchhaltung
+            {t('nav.brand')}
           </div>
         </div>
         {NAV.map((item) => (
-          <SideNavItem key={item.to} {...item} />
+          <SideNavItem
+            key={item.to}
+            to={item.to}
+            label={t(item.labelKey)}
+            icon={item.icon}
+            end={item.end}
+          />
         ))}
       </aside>
 
@@ -107,7 +115,13 @@ export default function App() {
         }}
       >
         {NAV.map((item) => (
-          <BottomNavItem key={item.to} {...item} />
+          <BottomNavItem
+            key={item.to}
+            to={item.to}
+            label={t(item.labelKey)}
+            icon={item.icon}
+            end={item.end}
+          />
         ))}
       </nav>
     </div>

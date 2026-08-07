@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Loader2, Lock } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { removeLock, verifyPassphrase } from '../lib/applock'
 import { wipeAllData } from '../db/repo'
 
@@ -9,6 +10,7 @@ import { wipeAllData } from '../db/repo'
  * gibt es einen bewussten Notausgang (App zurücksetzen = lokale Daten löschen).
  */
 export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
+  const { t } = useTranslation()
   const [pass, setPass] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -23,7 +25,7 @@ export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
         setPass('')
         onUnlock()
       } else {
-        setError('Falsches Passwort.')
+        setError(t('lock.wrongPassword'))
       }
     } finally {
       setBusy(false)
@@ -31,13 +33,7 @@ export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
   }
 
   async function reset() {
-    if (
-      !window.confirm(
-        'App zurücksetzen? Dabei werden ALLE lokalen Daten auf diesem Gerät gelöscht ' +
-          '(Buchungen, Belege, Einstellungen). Nur fortfahren, wenn du ein Backup hast ' +
-          'oder neu anfangen willst.',
-      )
-    ) {
+    if (!window.confirm(t('lock.confirmReset'))) {
       return
     }
     removeLock()
@@ -60,10 +56,10 @@ export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
           </div>
           <div>
             <h1 className="text-xl font-bold" style={{ color: 'var(--fg)' }}>
-              Gesperrt
+              {t('lock.locked')}
             </h1>
             <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
-              Passwort eingeben, um auf deine Buchhaltung zuzugreifen.
+              {t('lock.enterPassword')}
             </p>
           </div>
         </div>
@@ -72,7 +68,7 @@ export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
           <input
             className="input text-center"
             type="password"
-            placeholder="Passwort"
+            placeholder={t('lock.passwordPlaceholder')}
             value={pass}
             autoFocus
             autoComplete="current-password"
@@ -88,7 +84,7 @@ export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
             className="btn btn-primary w-full"
             disabled={busy || pass.length === 0}
           >
-            {busy ? <Loader2 size={18} className="animate-spin" /> : <Lock size={18} />} Entsperren
+            {busy ? <Loader2 size={18} className="animate-spin" /> : <Lock size={18} />} {t('lock.unlock')}
           </button>
         </form>
 
@@ -99,21 +95,17 @@ export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
               style={{ color: 'var(--muted)' }}
               onClick={() => setShowReset(true)}
             >
-              Passwort vergessen?
+              {t('lock.forgot')}
             </button>
           ) : (
             <div className="space-y-2 text-xs" style={{ color: 'var(--muted)' }}>
-              <p>
-                Aus Sicherheitsgründen gibt es kein „Zurücksetzen" des Passworts, das die Daten
-                erhält. Du kannst nur ganz neu anfangen (löscht alle lokalen Daten) – oder danach
-                ein Backup einspielen, falls vorhanden.
-              </p>
+              <p>{t('lock.forgotExplain')}</p>
               <button
                 className="btn w-full"
                 style={{ color: 'var(--expense)' }}
                 onClick={reset}
               >
-                App zurücksetzen (Daten löschen)
+                {t('lock.reset')}
               </button>
             </div>
           )}

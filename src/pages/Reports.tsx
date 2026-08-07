@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Download, Loader2, Printer, Sparkles } from 'lucide-react'
 import { useCategories, useSettings, useTransactions } from '../store/hooks'
 import {
@@ -13,11 +14,13 @@ import { vatSummary } from '../lib/vat'
 import { MissingApiKeyError, summarizePeriod } from '../lib/anthropic'
 import { formatCents, formatSignedCents } from '../lib/money'
 import { countryLabel } from '../lib/countries'
+import { useCategoryName } from '../i18n/useCategoryName'
 import { downloadBlob, transactionsToCsv } from '../lib/export'
 import PageHeader from '../components/PageHeader'
 import FilterBar from '../components/FilterBar'
 
 export default function Reports() {
+  const { t } = useTranslation()
   const txs = useTransactions()
   const categories = useCategories()
   const settings = useSettings()
@@ -41,9 +44,13 @@ export default function Reports() {
   const vat = useMemo(() => vatSummary(filtered), [filtered])
 
   const periodLabel = [
-    filter.year === 'ALL' ? 'Alle Jahre' : String(filter.year),
-    !filter.country || filter.country === 'ALL' ? 'Alle Länder' : countryLabel(filter.country),
-    filter.sphere === 'business' ? 'Gewerblich' : filter.sphere === 'private' ? 'Privat' : 'Alle',
+    filter.year === 'ALL' ? t('reports.allYears') : String(filter.year),
+    !filter.country || filter.country === 'ALL' ? t('reports.allCountries') : countryLabel(filter.country),
+    filter.sphere === 'business'
+      ? t('reports.business')
+      : filter.sphere === 'private'
+        ? t('reports.private')
+        : t('reports.allSpheresShort'),
   ].join(' · ')
 
   const [aiText, setAiText] = useState<string | null>(null)
@@ -62,7 +69,7 @@ export default function Reports() {
       setAiError(
         err instanceof MissingApiKeyError
           ? err.message
-          : `Zusammenfassung fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`,
+          : t('scan.analysisFailed', { error: err instanceof Error ? err.message : String(err) }),
       )
     } finally {
       setAiBusy(false)
@@ -81,11 +88,11 @@ export default function Reports() {
   return (
     <div>
       <PageHeader
-        title="Berichte / EÜR"
-        subtitle="Einnahmen-Überschuss-Rechnung nach Land & Zeitraum"
+        title={t('reports.title')}
+        subtitle={t('reports.subtitle')}
         action={
           <div className="flex gap-2">
-            <button className="btn" onClick={() => window.print()} title="Als PDF drucken">
+            <button className="btn" onClick={() => window.print()} title={t('reports.printTitle')}>
               <Printer size={18} />
             </button>
             <button className="btn btn-primary" onClick={handleCsv} disabled={filtered.length === 0}>
@@ -105,47 +112,47 @@ export default function Reports() {
           <div className="flex items-start justify-between">
             <div>
               <div className="text-lg font-bold" style={{ color: 'var(--fg)' }}>
-                Einnahmen-Überschuss-Rechnung
+                {t('reports.euerTitle')}
               </div>
               <div className="text-sm" style={{ color: 'var(--muted)' }}>
-                {settings.businessName || 'Einzelunternehmen'} ·{' '}
-                {filter.year === 'ALL' ? 'Alle Jahre' : filter.year} ·{' '}
+                {settings.businessName || t('reports.defaultBusinessName')} ·{' '}
+                {filter.year === 'ALL' ? t('reports.allYears') : filter.year} ·{' '}
                 {!filter.country || filter.country === 'ALL'
-                  ? 'Alle Länder'
+                  ? t('reports.allCountries')
                   : countryLabel(filter.country)}{' '}
                 ·{' '}
                 {filter.sphere === 'business'
-                  ? 'Gewerblich'
+                  ? t('reports.business')
                   : filter.sphere === 'private'
-                    ? 'Privat'
-                    : 'Alle Sphären'}
+                    ? t('reports.private')
+                    : t('reports.allSpheres')}
               </div>
             </div>
           </div>
 
           <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-            <SumBox label="Einnahmen" value={formatCents(summary.incomeCents)} color="var(--income)" />
-            <SumBox label="Ausgaben" value={formatCents(summary.expenseCents)} color="var(--expense)" />
+            <SumBox label={t('reports.income')} value={formatCents(summary.incomeCents)} color="var(--income)" />
+            <SumBox label={t('reports.expenses')} value={formatCents(summary.expenseCents)} color="var(--expense)" />
             <SumBox
-              label="Überschuss"
+              label={t('reports.surplus')}
               value={formatSignedCents(summary.surplusCents)}
               color={summary.surplusCents >= 0 ? 'var(--income)' : 'var(--expense)'}
             />
           </div>
         </div>
 
-        <ReportTable title="Einnahmen" lines={incomeLines} total={summary.incomeCents} />
-        <ReportTable title="Ausgaben" lines={expenseLines} total={summary.expenseCents} />
+        <ReportTable title={t('reports.income')} lines={incomeLines} total={summary.incomeCents} />
+        <ReportTable title={t('reports.expenses')} lines={expenseLines} total={summary.expenseCents} />
 
         {!settings.kleinunternehmer && summary.count > 0 && (
           <div className="card mb-4">
             <h2 className="mb-3 font-semibold" style={{ color: 'var(--fg)' }}>
-              Umsatzsteuer-Voranmeldung
+              {t('reports.ustTitle')}
             </h2>
-            <VatLine label="Umsatzsteuer (auf Einnahmen)" value={vat.outputVatCents} />
-            <VatLine label="Vorsteuer (auf Ausgaben)" value={vat.inputVatCents} />
+            <VatLine label={t('reports.ustOutput')} value={vat.outputVatCents} />
+            <VatLine label={t('reports.ustInput')} value={vat.inputVatCents} />
             <div className="flex items-center justify-between pt-3 font-semibold">
-              <span style={{ color: 'var(--fg)' }}>Zahllast</span>
+              <span style={{ color: 'var(--fg)' }}>{t('reports.payable')}</span>
               <span
                 className="tabular-nums"
                 style={{ color: vat.payableCents >= 0 ? 'var(--fg)' : 'var(--income)' }}
@@ -154,16 +161,15 @@ export default function Reports() {
               </span>
             </div>
             <div className="mt-2 flex justify-between text-xs" style={{ color: 'var(--muted)' }}>
-              <span>Netto-Einnahmen: {formatCents(vat.netIncomeCents)}</span>
-              <span>Netto-Ausgaben: {formatCents(vat.netExpenseCents)}</span>
+              <span>{t('reports.netIncome', { value: formatCents(vat.netIncomeCents) })}</span>
+              <span>{t('reports.netExpense', { value: formatCents(vat.netExpenseCents) })}</span>
             </div>
           </div>
         )}
 
         {settings.kleinunternehmer && (
           <p className="mt-4 text-xs" style={{ color: 'var(--muted)' }}>
-            Hinweis: Kleinunternehmer nach §19 UStG – Beträge ohne gesonderten
-            Umsatzsteuerausweis.
+            {t('reports.kuNote')}
           </p>
         )}
       </div>
@@ -172,7 +178,7 @@ export default function Reports() {
       <div className="no-print card mt-1">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="flex items-center gap-2 font-semibold" style={{ color: 'var(--fg)' }}>
-            <Sparkles size={18} color="var(--accent)" /> KI-Zusammenfassung
+            <Sparkles size={18} color="var(--accent)" /> {t('reports.aiTitle')}
           </h2>
           <button
             className="btn btn-primary"
@@ -180,7 +186,7 @@ export default function Reports() {
             disabled={aiBusy || summary.count === 0}
           >
             {aiBusy ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-            Analysieren
+            {t('reports.analyze')}
           </button>
         </div>
         {aiError && (
@@ -198,8 +204,7 @@ export default function Reports() {
         )}
         {!aiText && !aiError && (
           <p className="text-sm" style={{ color: 'var(--muted)' }}>
-            Lass Claude die wichtigsten Zahlen und Auffälligkeiten dieses Zeitraums
-            zusammenfassen (benötigt API-Key).
+            {t('reports.aiPlaceholder')}
           </p>
         )}
       </div>
@@ -259,6 +264,8 @@ function ReportTable({
   lines: ReturnType<typeof groupByCategory>
   total: number
 }) {
+  const { t } = useTranslation()
+  const categoryName = useCategoryName()
   return (
     <div className="card mb-4">
       <h2 className="mb-3 font-semibold" style={{ color: 'var(--fg)' }}>
@@ -266,7 +273,7 @@ function ReportTable({
       </h2>
       {lines.length === 0 ? (
         <p className="text-sm" style={{ color: 'var(--muted)' }}>
-          Keine Buchungen.
+          {t('reports.noBookings')}
         </p>
       ) : (
         <div>
@@ -281,7 +288,7 @@ function ReportTable({
                   className="inline-block h-2.5 w-2.5 rounded-full"
                   style={{ background: line.color }}
                 />
-                {line.categoryName}
+                {categoryName({ id: line.categoryId, name: line.categoryName })}
                 {line.skr03Code && (
                   <span className="text-xs" style={{ color: 'var(--muted)' }}>
                     · {line.skr03Code}
@@ -297,7 +304,7 @@ function ReportTable({
             </div>
           ))}
           <div className="flex items-center justify-between pt-3 font-semibold">
-            <span style={{ color: 'var(--fg)' }}>Summe {title}</span>
+            <span style={{ color: 'var(--fg)' }}>{t('reports.sumOf', { title })}</span>
             <span className="tabular-nums" style={{ color: 'var(--fg)' }}>
               {formatCents(total)}
             </span>

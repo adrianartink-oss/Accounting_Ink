@@ -1,7 +1,9 @@
 import { ShieldAlert } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 /** Rechtlicher Hinweis, der beim ersten Start bestätigt werden muss. */
 export default function Disclaimer({ onAccept }: { onAccept: () => void }) {
+  const { t } = useTranslation()
   return (
     <div
       className="flex min-h-screen items-center justify-center p-6"
@@ -16,31 +18,16 @@ export default function Disclaimer({ onAccept }: { onAccept: () => void }) {
             <ShieldAlert size={24} color="var(--accent)" />
           </div>
           <h1 className="text-xl font-bold" style={{ color: 'var(--fg)' }}>
-            Kurz vorab
+            {t('disclaimer.title')}
           </h1>
         </div>
         <div className="space-y-3 text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
-          <p>
-            Diese App ist ein <strong style={{ color: 'var(--fg)' }}>privates
-            Organisations- und Übersichtswerkzeug</strong> für deine Einnahmen und
-            Ausgaben nach dem EÜR-Prinzip – <strong style={{ color: 'var(--fg)' }}>keine
-            zertifizierte GoBD-Buchhaltungssoftware</strong>.
-          </p>
-          <p>
-            Für die Steuererklärung bleiben der Export der Daten und die Abstimmung mit
-            deinem Steuerberater bzw. ELSTER maßgeblich. Der Umzug von Deutschland nach
-            Spanien (Steuer-Ansässigkeit, Doppelbesteuerungsabkommen, §19a EU-Regelung)
-            ist steuerlich komplex – die App strukturiert deine Daten nach Land, ersetzt
-            aber keine Steuerberatung.
-          </p>
-          <p>
-            Alle Daten bleiben lokal auf deinem Gerät. Für die KI-Funktionen wird dein
-            eigener Anthropic-API-Key genutzt; Belege werden dann zur Analyse an Anthropic
-            gesendet.
-          </p>
+          <p>{t('disclaimer.p1')}</p>
+          <p>{t('disclaimer.p2')}</p>
+          <p>{t('disclaimer.p3')}</p>
         </div>
         <button className="btn btn-primary mt-6 w-full" onClick={onAccept}>
-          Verstanden – los geht's
+          {t('disclaimer.accept')}
         </button>
       </div>
     </div>

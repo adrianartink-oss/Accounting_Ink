@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle2, Lock, LockKeyhole, ShieldOff } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   LOCK_CHANGED_EVENT,
   getAutoLockMinutes,
@@ -10,11 +11,11 @@ import {
   setPassphrase,
 } from '../lib/applock'
 
-const AUTO_LOCK_OPTIONS: { value: number; label: string }[] = [
-  { value: 1, label: 'nach 1 Minute' },
-  { value: 5, label: 'nach 5 Minuten' },
-  { value: 15, label: 'nach 15 Minuten' },
-  { value: 0, label: 'nur beim Neustart' },
+const AUTO_LOCK_OPTIONS: { value: number; key: string }[] = [
+  { value: 1, key: 'security.autoLock1' },
+  { value: 5, key: 'security.autoLock5' },
+  { value: 15, key: 'security.autoLock15' },
+  { value: 0, key: 'security.autoLockRestart' },
 ]
 
 const MIN_LEN = 4
@@ -24,6 +25,7 @@ const MIN_LEN = 4
  * und sofortiges Sperren. Wird in den Einstellungen und im Onboarding genutzt.
  */
 export default function AppLockSetup({ compact = false }: { compact?: boolean }) {
+  const { t } = useTranslation()
   const [enabled, setEnabled] = useState(() => isLockEnabled())
   const [autoLock, setAutoLock] = useState(() => getAutoLockMinutes())
   const [pass, setPass] = useState('')
@@ -44,11 +46,11 @@ export default function AppLockSetup({ compact = false }: { compact?: boolean })
   async function save() {
     setError(null)
     if (pass.length < MIN_LEN) {
-      setError(`Bitte mindestens ${MIN_LEN} Zeichen wählen.`)
+      setError(t('security.errorMinLen', { min: MIN_LEN }))
       return
     }
     if (pass !== confirm) {
-      setError('Die Passwörter stimmen nicht überein.')
+      setError(t('security.errorMismatch'))
       return
     }
     setBusy(true)
@@ -64,7 +66,7 @@ export default function AppLockSetup({ compact = false }: { compact?: boolean })
 
   function handleRemove() {
     if (confirm.length) return
-    if (window.confirm('App-Sperre wirklich entfernen? Die App ist danach ohne Passwort zugänglich.')) {
+    if (window.confirm(t('security.confirmRemove'))) {
       removeLock()
     }
   }
@@ -77,20 +79,18 @@ export default function AppLockSetup({ compact = false }: { compact?: boolean })
       <div className="flex items-center gap-2 text-sm">
         {enabled ? (
           <span className="flex items-center gap-1.5" style={{ color: 'var(--income)' }}>
-            <CheckCircle2 size={16} /> App-Sperre aktiv
+            <CheckCircle2 size={16} /> {t('security.lockActive')}
           </span>
         ) : (
           <span className="flex items-center gap-1.5" style={{ color: 'var(--muted)' }}>
-            <ShieldOff size={16} /> Keine App-Sperre
+            <ShieldOff size={16} /> {t('security.lockInactive')}
           </span>
         )}
       </div>
 
       {!compact && (
         <p className="text-xs" style={{ color: 'var(--muted)' }}>
-          Schützt die App mit einem Passwort beim Öffnen. Deine Daten liegen ohnehin nur auf
-          diesem Gerät – die Sperre verhindert, dass jemand, der das Gerät in die Hand nimmt,
-          deine Buchhaltung sieht.
+          {t('security.lockExplain')}
         </p>
       )}
 
@@ -99,7 +99,7 @@ export default function AppLockSetup({ compact = false }: { compact?: boolean })
           <input
             className="input"
             type="password"
-            placeholder={enabled ? 'Neues Passwort' : 'Passwort'}
+            placeholder={enabled ? t('security.newPassword') : t('security.password')}
             value={pass}
             autoComplete="new-password"
             onChange={(e) => setPass(e.target.value)}
@@ -107,7 +107,7 @@ export default function AppLockSetup({ compact = false }: { compact?: boolean })
           <input
             className="input"
             type="password"
-            placeholder="Passwort wiederholen"
+            placeholder={t('security.repeatPassword')}
             value={confirm}
             autoComplete="new-password"
             onChange={(e) => setConfirm(e.target.value)}
@@ -118,12 +118,11 @@ export default function AppLockSetup({ compact = false }: { compact?: boolean })
             </p>
           )}
           <p className="text-xs" style={{ color: 'var(--expense)' }}>
-            Wichtig: Merke dir das Passwort gut. Ohne Passwort kommst du nur über ein
-            Zurücksetzen (Daten löschen) oder ein Backup wieder hinein.
+            {t('security.rememberWarning')}
           </p>
           <div className="flex gap-2">
             <button className="btn btn-primary flex-1" onClick={save} disabled={busy}>
-              <Lock size={18} /> {enabled ? 'Passwort ändern' : 'App-Sperre aktivieren'}
+              <Lock size={18} /> {enabled ? t('security.changePassword') : t('security.activateLock')}
             </button>
             {enabled && (
               <button
@@ -135,7 +134,7 @@ export default function AppLockSetup({ compact = false }: { compact?: boolean })
                   setError(null)
                 }}
               >
-                Abbrechen
+                {t('common.cancel')}
               </button>
             )}
           </div>
@@ -145,7 +144,7 @@ export default function AppLockSetup({ compact = false }: { compact?: boolean })
       {enabled && (
         <>
           <div>
-            <label className="label">Automatisch sperren</label>
+            <label className="label">{t('security.autoLock')}</label>
             <select
               className="input"
               value={autoLock}
@@ -157,7 +156,7 @@ export default function AppLockSetup({ compact = false }: { compact?: boolean })
             >
               {AUTO_LOCK_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
-                  {o.label}
+                  {t(o.key)}
                 </option>
               ))}
             </select>
@@ -166,13 +165,13 @@ export default function AppLockSetup({ compact = false }: { compact?: boolean })
           {!changing && (
             <div className="flex flex-wrap gap-2">
               <button className="btn" onClick={() => setChanging(true)}>
-                <LockKeyhole size={18} /> Passwort ändern
+                <LockKeyhole size={18} /> {t('security.changePassword')}
               </button>
               <button className="btn" onClick={lockNow}>
-                <Lock size={18} /> Jetzt sperren
+                <Lock size={18} /> {t('security.lockNow')}
               </button>
               <button className="btn" style={{ color: 'var(--expense)' }} onClick={handleRemove}>
-                Sperre entfernen
+                {t('security.removeLock')}
               </button>
             </div>
           )}
