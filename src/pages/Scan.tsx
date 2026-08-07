@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Camera, ImageUp, Loader2, Sparkles, KeyRound, ScanText } from 'lucide-react'
 import { useCategories, useSettings } from '../store/hooks'
 import { prepareImage } from '../lib/image'
@@ -20,6 +21,7 @@ function today(): string {
 }
 
 export default function Scan() {
+  const { t } = useTranslation()
   const settings = useSettings()
   const categories = useCategories()
   const navigate = useNavigate()
@@ -52,7 +54,7 @@ export default function Scan() {
 
   function handleError(err: unknown) {
     if (err instanceof MissingApiKeyError) setError(err.message)
-    else setError(`Analyse fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`)
+    else setError(t('scan.analysisFailed', { error: err instanceof Error ? err.message : String(err) }))
   }
 
   async function handleImage(file: File) {
@@ -62,10 +64,10 @@ export default function Scan() {
     try {
       const prepared = await prepareImage(file)
       if (engine === 'local') {
-        setStatus('Erkennungsmodell wird geladen…')
+        setStatus(t('scan.statusModelLoading'))
         // Tesseract nur bei Bedarf laden (eigener Chunk).
         const { recognizeReceipt } = await import('../lib/ocr')
-        setStatus('Text wird lokal erkannt…')
+        setStatus(t('scan.statusLocalRecognizing'))
         const result = await recognizeReceipt(file, (p) => setProgress(p))
         const receiptId = await addReceipt(prepared.blob, prepared.thumbnail)
         const prefill: Partial<TransactionFormValues> = {
@@ -78,7 +80,7 @@ export default function Scan() {
         if (result.vendor) prefill.counterparty = result.vendor
         navigate('/add', { state: { prefill, receiptId, fromAi: true } })
       } else {
-        setStatus('Claude analysiert den Beleg…')
+        setStatus(t('scan.statusClaudeAnalyzing'))
         const extraction = await scanReceipt(prepared.base64, prepared.mediaType, categories, settings)
         const receiptId = await addReceipt(prepared.blob, prepared.thumbnail)
         navigate('/add', { state: { prefill: extractionToPrefill(extraction), receiptId, fromAi: true } })
@@ -107,10 +109,7 @@ export default function Scan() {
 
   return (
     <div>
-      <PageHeader
-        title="Beleg scannen"
-        subtitle="Betrag, Datum & Händler automatisch aus dem Beleg lesen"
-      />
+      <PageHeader title={t('scan.title')} subtitle={t('scan.subtitle')} />
 
       {/* Methode wählen */}
       <div
@@ -121,38 +120,35 @@ export default function Scan() {
           active={engine === 'local'}
           onClick={() => setEngine('local')}
           icon={<ScanText size={16} />}
-          title="Gratis (lokal)"
-          hint="ohne Key"
+          title={t('scan.localTab')}
+          hint={t('scan.localHint')}
         />
         <EngineTab
           active={engine === 'claude'}
           onClick={() => setEngine('claude')}
           icon={<Sparkles size={16} />}
-          title="Claude"
-          hint="genauer"
+          title={t('scan.claudeTab')}
+          hint={t('scan.claudeHint')}
         />
       </div>
 
       {engine === 'local' ? (
         <p className="mb-4 text-sm" style={{ color: 'var(--muted)' }}>
-          100 % kostenlos, ohne Konto. Läuft direkt auf deinem Gerät – das
-          Belegbild wird nicht hochgeladen. Erkennt vor allem Betrag & Datum;
-          Kategorie und Händler prüfst du kurz. (Beim ersten Mal wird einmalig ein
-          Erkennungsmodell geladen.)
+          {t('scan.localDesc')}
         </p>
       ) : !hasKey ? (
         <div className="card mb-4 flex items-start gap-3" style={{ borderColor: 'var(--accent)' }}>
           <KeyRound size={20} color="var(--accent)" className="mt-0.5 shrink-0" />
           <div className="text-sm" style={{ color: 'var(--fg)' }}>
-            <p className="font-medium">Für Claude brauchst du einen API-Key</p>
+            <p className="font-medium">{t('scan.claudeNoKeyTitle')}</p>
             <p className="mt-0.5" style={{ color: 'var(--muted)' }}>
-              Entweder oben auf „Gratis (lokal)" wechseln, oder den Key{' '}
+              {t('scan.claudeNoKeyBefore')}
               <button
                 className="underline"
                 style={{ color: 'var(--accent)' }}
                 onClick={() => navigate('/settings')}
               >
-                in den Einstellungen eintragen
+                {t('scan.claudeNoKeyLink')}
               </button>
               .
             </p>
@@ -160,8 +156,7 @@ export default function Scan() {
         </div>
       ) : (
         <p className="mb-4 text-sm" style={{ color: 'var(--muted)' }}>
-          Höchste Genauigkeit inkl. Kategorie-Vorschlag. Kostet pro Beleg einen
-          kleinen API-Betrag; das Bild wird zur Analyse an Anthropic gesendet.
+          {t('scan.claudeDesc')}
         </p>
       )}
 
@@ -184,7 +179,7 @@ export default function Scan() {
       {busy ? (
         <div className="card flex flex-col items-center justify-center gap-3 py-12">
           <Loader2 size={32} className="animate-spin" color="var(--accent)" />
-          <p style={{ color: 'var(--muted)' }}>{status || 'Wird verarbeitet…'}</p>
+          <p style={{ color: 'var(--muted)' }}>{status || t('scan.processing')}</p>
           {engine === 'local' && progress > 0 && (
             <div className="h-2 w-48 overflow-hidden rounded-full" style={{ background: 'var(--surface-2)' }}>
               <div
@@ -203,7 +198,7 @@ export default function Scan() {
           >
             <Camera size={28} color="var(--accent)" />
             <span className="font-medium" style={{ color: 'var(--fg)' }}>
-              Foto aufnehmen
+              {t('scan.takePhoto')}
             </span>
           </button>
           <button
@@ -213,7 +208,7 @@ export default function Scan() {
           >
             <ImageUp size={28} color="var(--accent)" />
             <span className="font-medium" style={{ color: 'var(--fg)' }}>
-              Bild wählen
+              {t('scan.chooseImage')}
             </span>
           </button>
         </div>
@@ -224,16 +219,15 @@ export default function Scan() {
         <div className="mb-2 flex items-center gap-2">
           <Sparkles size={18} color="var(--accent)" />
           <h2 className="font-semibold" style={{ color: 'var(--fg)' }}>
-            Per Text (mit Claude)
+            {t('scan.textTitle')}
           </h2>
         </div>
         <p className="mb-3 text-sm" style={{ color: 'var(--muted)' }}>
-          Beschreibe die Buchung in Worten, z. B. „42,50 € Tattoo-Nadeln bei
-          Killer Ink". Benötigt einen API-Key.
+          {t('scan.textDesc')}
         </p>
         <textarea
           className="input min-h-24 resize-none"
-          placeholder="42,50 € Tattoo-Farben bei Eternal Ink, gestern"
+          placeholder={t('scan.textPlaceholder')}
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
@@ -242,7 +236,7 @@ export default function Scan() {
           disabled={!hasKey || !text.trim() || busy}
           onClick={handleText}
         >
-          <Sparkles size={18} /> In Buchung umwandeln
+          <Sparkles size={18} /> {t('scan.toTransaction')}
         </button>
       </div>
 

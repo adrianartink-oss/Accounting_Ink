@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Building2, Gauge, Target } from 'lucide-react'
 import { db, updateSettings } from '../db/schema'
@@ -19,14 +20,15 @@ import StatTile from '../components/StatTile'
 import Divider from '../components/Divider'
 
 export default function Studio() {
+  const { t } = useTranslation()
   const settings = useLiveQuery(() => db.settings.get('singleton'), [])
   const txs = useTransactions()
   if (!settings) {
     return (
       <div>
-        <PageHeader title="Studio" />
+        <PageHeader title={t('studio.title')} />
         <div className="card text-center" style={{ color: 'var(--muted)' }}>
-          Wird geladen…
+          {t('common.loading')}
         </div>
       </div>
     )
@@ -35,6 +37,7 @@ export default function Studio() {
 }
 
 function StudioInner({ settings, txs }: { settings: Settings; txs: ReturnType<typeof useTransactions> }) {
+  const { t } = useTranslation()
   const years = availableYears(txs)
   const currentYear = new Date().getFullYear()
   const [year, setYear] = useState(currentYear)
@@ -59,7 +62,7 @@ function StudioInner({ settings, txs }: { settings: Settings; txs: ReturnType<ty
 
   return (
     <div>
-      <PageHeader title="Studio" subtitle="Kennzahlen, Kleinunternehmer-Grenze & Stammdaten" />
+      <PageHeader title={t('studio.title')} subtitle={t('studio.subtitle')} />
 
       {/* Jahr wählen */}
       <div className="mb-5 flex flex-wrap gap-2">
@@ -73,13 +76,17 @@ function StudioInner({ settings, txs }: { settings: Settings; txs: ReturnType<ty
       {/* Kennzahlen-Kacheln */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <StatTile
-          label={`Jahresumsatz ${year}`}
+          label={t('studio.yearRevenue', { year })}
           value={formatCents(currentNet)}
           accent="var(--accent)"
-          hint="netto, gewerblich"
+          hint={t('studio.netBusiness')}
         />
-        <StatTile label="Ø-Preis / Tattoo" value={formatCents(tattoo.avgPriceCents)} />
-        <StatTile label="Tattoos" value={String(tattoo.count)} hint={`${(tattoo.totalDurationMin / 60).toFixed(1)} Std.`} />
+        <StatTile label={t('studio.avgPrice')} value={formatCents(tattoo.avgPriceCents)} />
+        <StatTile
+          label={t('studio.tattoos')}
+          value={String(tattoo.count)}
+          hint={t('studio.hoursShort', { hours: (tattoo.totalDurationMin / 60).toFixed(1) })}
+        />
       </div>
 
       {/* §19-Ampel */}
@@ -87,35 +94,35 @@ function StudioInner({ settings, txs }: { settings: Settings; txs: ReturnType<ty
         <div className="mb-3 flex items-center gap-2">
           <Gauge size={18} color="var(--accent)" />
           <h2 className="font-semibold" style={{ color: 'var(--fg)' }}>
-            Kleinunternehmer-Grenze (§19)
+            {t('studio.kuTitle')}
           </h2>
         </div>
         <LimitBar
-          label={`Laufendes Jahr (${year})`}
+          label={t('studio.currentYear', { year })}
           valueCents={currentNet}
           limitCents={KU_CURRENT_LIMIT_CENTS}
-          limitLabel="100.000 €"
+          limitLabel={formatCents(KU_CURRENT_LIMIT_CENTS)}
         />
         <div className="mt-3">
           <LimitBar
-            label={`Vorjahr (${year - 1})`}
+            label={t('studio.priorYear', { year: year - 1 })}
             valueCents={priorNet}
             limitCents={KU_PRIOR_LIMIT_CENTS}
-            limitLabel="25.000 €"
+            limitLabel={formatCents(KU_PRIOR_LIMIT_CENTS)}
           />
         </div>
         <p
           className="mt-3 text-sm font-medium"
           style={{ color: ku.status === 'ok' ? 'var(--income)' : 'var(--expense)' }}
         >
-          {ku.message}
+          {t(`studio.${ku.messageKey}`)}
         </p>
         <div className="mt-3">
-          <label className="label">Vorjahresumsatz manuell (falls vor App-Nutzung)</label>
+          <label className="label">{t('studio.priorManual')}</label>
           <input
             className="input"
             inputMode="decimal"
-            placeholder="z. B. 18500"
+            placeholder={t('studio.priorPlaceholder')}
             value={priorStr}
             onChange={(e) => {
               setPriorStr(e.target.value)
@@ -130,13 +137,13 @@ function StudioInner({ settings, txs }: { settings: Settings; txs: ReturnType<ty
         <div className="mb-3 flex items-center gap-2">
           <Target size={18} color="var(--accent)" />
           <h2 className="font-semibold" style={{ color: 'var(--fg)' }}>
-            Umsatzziel {year}
+            {t('studio.targetTitle', { year })}
           </h2>
         </div>
         <input
           className="input"
           inputMode="decimal"
-          placeholder="Jahresziel in € (z. B. 40000)"
+          placeholder={t('studio.targetPlaceholder')}
           value={targetStr}
           onChange={(e) => {
             setTargetStr(e.target.value)
@@ -147,7 +154,7 @@ function StudioInner({ settings, txs }: { settings: Settings; txs: ReturnType<ty
           <div className="mt-3">
             <div className="mb-1 flex justify-between text-sm" style={{ color: 'var(--muted)' }}>
               <span>{formatCents(currentNet)}</span>
-              <span>{Math.round(targetPct * 100)}% von {formatCents(target)}</span>
+              <span>{t('studio.targetProgress', { pct: Math.round(targetPct * 100), total: formatCents(target) })}</span>
             </div>
             <Bar pct={targetPct} color="var(--income)" />
           </div>
@@ -161,18 +168,18 @@ function StudioInner({ settings, txs }: { settings: Settings; txs: ReturnType<ty
         <div className="mb-3 flex items-center gap-2">
           <Building2 size={18} color="var(--accent)" />
           <h2 className="font-semibold" style={{ color: 'var(--fg)' }}>
-            Betriebs-Stammdaten
+            {t('studio.masterData')}
           </h2>
         </div>
         <div className="space-y-3">
-          <Field label="Name / Firmierung" value={settings.businessName} onChange={(v) => patch({ businessName: v })} />
-          <Field label="Studio-Adresse" value={settings.address} onChange={(v) => patch({ address: v })} />
+          <Field label={t('studio.fieldName')} value={settings.businessName} onChange={(v) => patch({ businessName: v })} />
+          <Field label={t('studio.fieldAddress')} value={settings.address} onChange={(v) => patch({ address: v })} />
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Steuernummer" value={settings.taxNumber ?? ''} onChange={(v) => patch({ taxNumber: v })} />
-            <Field label="USt-IdNr" value={settings.vatId ?? ''} onChange={(v) => patch({ vatId: v })} />
+            <Field label={t('studio.fieldTaxNumber')} value={settings.taxNumber ?? ''} onChange={(v) => patch({ taxNumber: v })} />
+            <Field label={t('studio.fieldVatId')} value={settings.vatId ?? ''} onChange={(v) => patch({ vatId: v })} />
           </div>
           <div>
-            <label className="label">Gewerbeanmeldung (Datum)</label>
+            <label className="label">{t('studio.fieldGewerbe')}</label>
             <input
               type="date"
               className="input"
@@ -181,20 +188,20 @@ function StudioInner({ settings, txs }: { settings: Settings; txs: ReturnType<ty
             />
           </div>
           <Field
-            label="Gesundheitsamt / Hygiene"
+            label={t('studio.fieldHealth')}
             value={settings.healthOfficeReg ?? ''}
             onChange={(v) => patch({ healthOfficeReg: v })}
-            placeholder="Registrierung / Bemerkung"
+            placeholder={t('studio.fieldHealthPlaceholder')}
           />
           <Field
-            label="Berufshaftpflicht / Versicherung"
+            label={t('studio.fieldInsurance')}
             value={settings.insurance ?? ''}
             onChange={(v) => patch({ insurance: v })}
-            placeholder="Versicherer / Police"
+            placeholder={t('studio.fieldInsurancePlaceholder')}
           />
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label">Standardland</label>
+              <label className="label">{t('studio.defaultCountry')}</label>
               <select
                 className="input"
                 value={settings.defaultCountry}
@@ -214,7 +221,7 @@ function StudioInner({ settings, txs }: { settings: Settings; txs: ReturnType<ty
               onClick={() => patch({ kleinunternehmer: !settings.kleinunternehmer })}
             >
               <span className="text-sm font-medium" style={{ color: 'var(--fg)' }}>
-                §19 Kleinunternehmer
+                {t('studio.kleinunternehmer')}
               </span>
               <span
                 className="relative h-6 w-11 shrink-0 rounded-full transition"
@@ -233,22 +240,22 @@ function StudioInner({ settings, txs }: { settings: Settings; txs: ReturnType<ty
       {/* Tattoo-Statistik */}
       <div className="card mt-5">
         <h2 className="mb-3 font-semibold" style={{ color: 'var(--fg)' }}>
-          Tattoo-Statistik {year}
+          {t('studio.statsTitle', { year })}
         </h2>
         {tattoo.count === 0 ? (
           <p className="text-sm" style={{ color: 'var(--muted)' }}>
-            Noch keine gewerblichen Einnahmen mit Tattoo-Details in diesem Jahr.
+            {t('studio.statsEmpty')}
           </p>
         ) : (
           <>
             <div className="grid grid-cols-3 gap-3 text-center">
-              <MiniStat label="Anzahl" value={String(tattoo.count)} />
-              <MiniStat label="Ø-Dauer" value={`${(tattoo.avgDurationMin / 60).toFixed(1)} h`} />
-              <MiniStat label="Gesamt" value={`${(tattoo.totalDurationMin / 60).toFixed(0)} h`} />
+              <MiniStat label={t('studio.statCount')} value={String(tattoo.count)} />
+              <MiniStat label={t('studio.statAvgDuration')} value={`${(tattoo.avgDurationMin / 60).toFixed(1)} h`} />
+              <MiniStat label={t('studio.statTotal')} value={`${(tattoo.totalDurationMin / 60).toFixed(0)} h`} />
             </div>
             {tattoo.topMotifs.length > 0 && (
               <div className="mt-4">
-                <span className="label">Beliebteste Stile</span>
+                <span className="label">{t('studio.topStyles')}</span>
                 <div className="flex flex-wrap gap-2">
                   {tattoo.topMotifs.map((m) => (
                     <span key={m.motif} className="chip">

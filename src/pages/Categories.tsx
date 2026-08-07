@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Plus, Trash2, X } from 'lucide-react'
 import { useCategories } from '../store/hooks'
 import { addCategory, deleteCategory } from '../db/repo'
 import type { Sphere, TxType } from '../db/types'
+import { useCategoryName } from '../i18n/useCategoryName'
 import PageHeader from '../components/PageHeader'
 import CategoryIcon, { ICON_NAMES } from '../components/CategoryIcon'
 
@@ -13,15 +15,17 @@ const COLORS = [
 ]
 
 export default function Categories() {
+  const { t } = useTranslation()
+  const categoryName = useCategoryName()
   const categories = useCategories()
   const [adding, setAdding] = useState(false)
 
   const sections = useMemo(() => {
     return [
-      { key: 'business-income', title: 'Gewerbliche Einnahmen', kind: 'income' as TxType, sphere: 'business' as Sphere },
-      { key: 'business-expense', title: 'Gewerbliche Ausgaben', kind: 'expense' as TxType, sphere: 'business' as Sphere },
-      { key: 'private-income', title: 'Private Einnahmen', kind: 'income' as TxType, sphere: 'private' as Sphere },
-      { key: 'private-expense', title: 'Private Ausgaben', kind: 'expense' as TxType, sphere: 'private' as Sphere },
+      { key: 'business-income', titleKey: 'categories.businessIncome', kind: 'income' as TxType, sphere: 'business' as Sphere },
+      { key: 'business-expense', titleKey: 'categories.businessExpense', kind: 'expense' as TxType, sphere: 'business' as Sphere },
+      { key: 'private-income', titleKey: 'categories.privateIncome', kind: 'income' as TxType, sphere: 'private' as Sphere },
+      { key: 'private-expense', titleKey: 'categories.privateExpense', kind: 'expense' as TxType, sphere: 'private' as Sphere },
     ].map((s) => ({
       ...s,
       items: categories.filter((c) => c.kind === s.kind && c.sphere === s.sphere),
@@ -31,11 +35,11 @@ export default function Categories() {
   return (
     <div>
       <PageHeader
-        title="Kategorien"
-        subtitle="Kontenrahmen (SKR03) anpassen"
+        title={t('categories.title')}
+        subtitle={t('categories.subtitle')}
         action={
           <button className="btn btn-primary" onClick={() => setAdding(true)}>
-            <Plus size={18} /> Neu
+            <Plus size={18} /> {t('common.new')}
           </button>
         }
       />
@@ -49,12 +53,12 @@ export default function Categories() {
               className="mb-2 px-1 text-sm font-semibold uppercase tracking-wide"
               style={{ color: 'var(--muted)' }}
             >
-              {section.title}
+              {t(section.titleKey)}
             </h3>
             <div className="card !p-2">
               {section.items.length === 0 ? (
                 <p className="px-2 py-2 text-sm" style={{ color: 'var(--muted)' }}>
-                  Keine Kategorien.
+                  {t('categories.empty')}
                 </p>
               ) : (
                 section.items.map((c) => (
@@ -70,7 +74,7 @@ export default function Categories() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-medium" style={{ color: 'var(--fg)' }}>
-                        {c.name}
+                        {categoryName(c)}
                       </div>
                       {c.skr03Code && (
                         <div className="text-xs" style={{ color: 'var(--muted)' }}>
@@ -82,7 +86,8 @@ export default function Categories() {
                       <button
                         className="rounded-lg p-2"
                         onClick={() => {
-                          if (confirm(`Kategorie „${c.name}" löschen?`)) deleteCategory(c.id)
+                          if (confirm(t('categories.confirmDelete', { name: categoryName(c) })))
+                            deleteCategory(c.id)
                         }}
                       >
                         <Trash2 size={16} color="var(--expense)" />
@@ -100,6 +105,7 @@ export default function Categories() {
 }
 
 function AddForm({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation()
   const [name, setName] = useState('')
   const [kind, setKind] = useState<TxType>('expense')
   const [sphere, setSphere] = useState<Sphere>('business')
@@ -124,7 +130,7 @@ function AddForm({ onClose }: { onClose: () => void }) {
     <div className="card mb-5">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="font-semibold" style={{ color: 'var(--fg)' }}>
-          Neue Kategorie
+          {t('categories.newTitle')}
         </h2>
         <button onClick={onClose} className="p-1">
           <X size={18} color="var(--muted)" />
@@ -134,7 +140,7 @@ function AddForm({ onClose }: { onClose: () => void }) {
       <div className="space-y-3">
         <input
           className="input"
-          placeholder="Name (z. B. Studio-Nebenkosten)"
+          placeholder={t('categories.namePlaceholder')}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -145,28 +151,28 @@ function AddForm({ onClose }: { onClose: () => void }) {
             value={kind}
             onChange={(e) => setKind(e.target.value as TxType)}
           >
-            <option value="expense">Ausgabe</option>
-            <option value="income">Einnahme</option>
+            <option value="expense">{t('categories.expense')}</option>
+            <option value="income">{t('categories.income')}</option>
           </select>
           <select
             className="input"
             value={sphere}
             onChange={(e) => setSphere(e.target.value as Sphere)}
           >
-            <option value="business">Gewerblich</option>
-            <option value="private">Privat</option>
+            <option value="business">{t('categories.business')}</option>
+            <option value="private">{t('categories.private')}</option>
           </select>
         </div>
 
         <input
           className="input"
-          placeholder="SKR03-Code (optional)"
+          placeholder={t('categories.skrPlaceholder')}
           value={skr03Code}
           onChange={(e) => setSkr03Code(e.target.value)}
         />
 
         <div>
-          <span className="label">Farbe</span>
+          <span className="label">{t('categories.color')}</span>
           <div className="flex flex-wrap gap-2">
             {COLORS.map((c) => (
               <button
@@ -184,7 +190,7 @@ function AddForm({ onClose }: { onClose: () => void }) {
         </div>
 
         <div>
-          <span className="label">Icon</span>
+          <span className="label">{t('categories.icon')}</span>
           <div className="flex flex-wrap gap-2">
             {ICON_NAMES.map((n) => (
               <button
@@ -203,7 +209,7 @@ function AddForm({ onClose }: { onClose: () => void }) {
         </div>
 
         <button className="btn btn-primary w-full" onClick={submit}>
-          Kategorie anlegen
+          {t('categories.create')}
         </button>
       </div>
     </div>

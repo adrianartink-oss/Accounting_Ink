@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import { Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { Category, Country, Currency, Settings, Sphere, TxType } from '../db/types'
 import type { TransactionInput } from '../db/repo'
 import { centsToInputString, currencySymbol, formatCents, parseAmountToCents } from '../lib/money'
 import { VAT_RATES, defaultVatBps, splitGross } from '../lib/vat'
 import { EU_COUNTRIES, currencyForCountry } from '../lib/countries'
+import { useCategoryName } from '../i18n/useCategoryName'
 import CategoryIcon from './CategoryIcon'
 
 export interface TransactionFormValues {
@@ -45,6 +47,8 @@ export default function TransactionForm({
   onSave: (input: TransactionInput) => void | Promise<void>
   onDelete?: () => void
 }) {
+  const { t } = useTranslation()
+  const categoryName = useCategoryName()
   const [type, setType] = useState<TxType>(initial?.type ?? 'expense')
   const [sphere, setSphere] = useState<Sphere>(initial?.sphere ?? 'business')
   const [country, setCountry] = useState<Country>(initial?.country ?? settings.defaultCountry)
@@ -96,11 +100,11 @@ export default function TransactionForm({
     setError(null)
     const cents = parseAmountToCents(amount)
     if (cents == null || cents <= 0) {
-      setError('Bitte einen gültigen Betrag eingeben.')
+      setError(t('form.errorAmount'))
       return
     }
     if (!effectiveCategoryId) {
-      setError('Bitte eine Kategorie wählen.')
+      setError(t('form.errorCategory'))
       return
     }
     const isTattoo = type === 'income' && sphere === 'business'
@@ -140,15 +144,15 @@ export default function TransactionForm({
         value={type}
         onChange={(v) => setType(v)}
         options={[
-          { value: 'expense', label: 'Ausgabe', accent: 'var(--expense)' },
-          { value: 'income', label: 'Einnahme', accent: 'var(--income)' },
+          { value: 'expense', label: t('form.expense'), accent: 'var(--expense)' },
+          { value: 'income', label: t('form.income'), accent: 'var(--income)' },
         ]}
       />
 
       {/* Betrag */}
       <div>
         <label className="label" htmlFor="amount">
-          Betrag ({currencySymbol(currency)})
+          {t('form.amount', { symbol: currencySymbol(currency) })}
         </label>
         <input
           id="amount"
@@ -163,7 +167,7 @@ export default function TransactionForm({
       {/* Umsatzsteuer (nur bei Regelbesteuerung) */}
       {!settings.kleinunternehmer && (
         <div>
-          <span className="label">Umsatzsteuer ({country})</span>
+          <span className="label">{t('form.vat', { country })}</span>
           <div className="flex flex-wrap gap-2">
             {vatOptions.map((o) => (
               <button
@@ -188,19 +192,19 @@ export default function TransactionForm({
       {/* Sphäre + Land */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <span className="label">Sphäre</span>
+          <span className="label">{t('form.sphere')}</span>
           <Segmented
             value={sphere}
             onChange={(v) => setSphere(v)}
             options={[
-              { value: 'business', label: 'Gewerblich' },
-              { value: 'private', label: 'Privat' },
+              { value: 'business', label: t('form.business') },
+              { value: 'private', label: t('form.private') },
             ]}
           />
         </div>
         <div>
           <label className="label" htmlFor="country">
-            Land
+            {t('form.country')}
           </label>
           <select
             id="country"
@@ -219,7 +223,7 @@ export default function TransactionForm({
 
       {/* Kategorie */}
       <div>
-        <span className="label">Kategorie</span>
+        <span className="label">{t('form.category')}</span>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {options.map((c) => {
             const active = c.id === effectiveCategoryId
@@ -238,13 +242,13 @@ export default function TransactionForm({
                 }}
               >
                 <CategoryIcon name={c.icon} size={18} color={c.color} />
-                <span className="truncate">{c.name}</span>
+                <span className="truncate">{categoryName(c)}</span>
               </button>
             )
           })}
           {options.length === 0 && (
             <p className="col-span-full text-sm" style={{ color: 'var(--muted)' }}>
-              Keine Kategorien für diese Kombination.
+              {t('form.noCategoryCombo')}
             </p>
           )}
         </div>
@@ -253,7 +257,7 @@ export default function TransactionForm({
       {/* Datum */}
       <div>
         <label className="label" htmlFor="date">
-          Datum
+          {t('form.date')}
         </label>
         <input
           id="date"
@@ -267,12 +271,12 @@ export default function TransactionForm({
       {/* Gegenpartei */}
       <div>
         <label className="label" htmlFor="counterparty">
-          {type === 'income' ? 'Kunde' : 'Händler / Lieferant'}
+          {t(type === 'income' ? 'form.customer' : 'form.merchant')}
         </label>
         <input
           id="counterparty"
           className="input"
-          placeholder={type === 'income' ? 'z. B. Laufkunde' : 'z. B. Killer Ink'}
+          placeholder={t(type === 'income' ? 'form.customerPlaceholder' : 'form.merchantPlaceholder')}
           value={counterparty}
           onChange={(e) => setCounterparty(e.target.value)}
         />
@@ -281,12 +285,12 @@ export default function TransactionForm({
       {/* Beschreibung */}
       <div>
         <label className="label" htmlFor="description">
-          Beschreibung
+          {t('form.description')}
         </label>
         <input
           id="description"
           className="input"
-          placeholder="Optionaler Verwendungszweck"
+          placeholder={t('form.descriptionPlaceholder')}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
@@ -298,30 +302,30 @@ export default function TransactionForm({
           className="rounded-xl border p-3"
           style={{ borderColor: 'var(--border)', background: 'var(--bg-elev)' }}
         >
-          <span className="label !mb-2">Tattoo-Details (optional)</span>
+          <span className="label !mb-2">{t('form.tattooDetails')}</span>
           <div className="grid grid-cols-2 gap-3">
             <input
               className="input"
-              placeholder="Motiv / Stil"
+              placeholder={t('form.motif')}
               value={motif}
               onChange={(e) => setMotif(e.target.value)}
             />
             <input
               className="input"
-              placeholder="Körperstelle"
+              placeholder={t('form.bodyPart')}
               value={bodyPart}
               onChange={(e) => setBodyPart(e.target.value)}
             />
             <input
               className="input"
-              placeholder="Größe (z. B. 12×8 cm)"
+              placeholder={t('form.size')}
               value={sizeText}
               onChange={(e) => setSizeText(e.target.value)}
             />
             <input
               className="input"
               inputMode="decimal"
-              placeholder="Dauer (Std.)"
+              placeholder={t('form.duration')}
               value={durationHours}
               onChange={(e) => setDurationHours(e.target.value)}
             />
@@ -343,11 +347,11 @@ export default function TransactionForm({
             style={{ color: 'var(--expense)', borderColor: 'var(--expense)' }}
             onClick={onDelete}
           >
-            <Trash2 size={18} /> Löschen
+            <Trash2 size={18} /> {t('common.delete')}
           </button>
         )}
         <button type="submit" className="btn btn-primary flex-1" disabled={saving}>
-          {saving ? 'Speichern…' : submitLabel}
+          {saving ? t('form.saving') : submitLabel}
         </button>
       </div>
     </form>
@@ -363,13 +367,14 @@ function VatPreview({
   rateBps: number
   currency: Currency
 }) {
+  const { t } = useTranslation()
   if (grossCents <= 0) return null
   const { netCents, vatCents } = splitGross(grossCents, rateBps)
   return (
     <div className="mt-2 flex justify-between text-xs" style={{ color: 'var(--muted)' }}>
-      <span>Netto: {formatCents(netCents, currency)}</span>
-      <span>USt: {formatCents(vatCents, currency)}</span>
-      <span>Brutto: {formatCents(grossCents, currency)}</span>
+      <span>{t('form.netto', { value: formatCents(netCents, currency) })}</span>
+      <span>{t('form.ustShort', { value: formatCents(vatCents, currency) })}</span>
+      <span>{t('form.brutto', { value: formatCents(grossCents, currency) })}</span>
     </div>
   )
 }

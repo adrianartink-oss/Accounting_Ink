@@ -1,16 +1,28 @@
 import type { Currency } from '../db/types'
+import { getLocale } from '../i18n/locale'
 
-/** Formatiert Cent-Beträge als lokalisierte Währung (de-DE). */
+/** Formatiert Cent-Beträge als lokalisierte Währung (aktive Sprache). */
 export function formatCents(amountCents: number, currency: Currency = 'EUR'): string {
-  return new Intl.NumberFormat('de-DE', {
+  return new Intl.NumberFormat(getLocale(), {
     style: 'currency',
     currency,
   }).format(amountCents / 100)
 }
 
+/** Formatiert ein ISO-Datum (YYYY-MM-DD) gemäß aktiver Sprache. */
+export function formatDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return iso
+  return new Intl.DateTimeFormat(getLocale(), {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(y, m - 1, d))
+}
+
 /** Liefert das Währungssymbol (z. B. „€", „kr", „zł") für eine Währung. */
 export function currencySymbol(currency: Currency = 'EUR'): string {
-  const parts = new Intl.NumberFormat('de-DE', {
+  const parts = new Intl.NumberFormat(getLocale(), {
     style: 'currency',
     currency,
     maximumFractionDigits: 0,
@@ -66,9 +78,9 @@ export function parseAmountToCents(input: string): number | null {
   return negative ? -cents : cents
 }
 
-/** Wandelt Cent in einen editierbaren de-DE-String (ohne Währungssymbol). */
+/** Wandelt Cent in einen editierbaren String (ohne Währungssymbol, aktive Sprache). */
 export function centsToInputString(amountCents: number): string {
-  return (amountCents / 100).toLocaleString('de-DE', {
+  return (amountCents / 100).toLocaleString(getLocale(), {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
     useGrouping: false,

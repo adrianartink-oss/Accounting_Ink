@@ -1,14 +1,17 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { PlusCircle, Search } from 'lucide-react'
 import { useCategories, useTransactions } from '../store/hooks'
 import { availableYears, filterTransactions, summarize, type TxFilter } from '../lib/euer'
 import { formatSignedCents } from '../lib/money'
+import { getLocale } from '../i18n/locale'
 import PageHeader from '../components/PageHeader'
 import FilterBar from '../components/FilterBar'
 import TransactionRow from '../components/TransactionRow'
 
 export default function Transactions() {
+  const { t } = useTranslation()
   const txs = useTransactions()
   const categories = useCategories()
   const navigate = useNavigate()
@@ -49,11 +52,11 @@ export default function Transactions() {
   return (
     <div>
       <PageHeader
-        title="Buchungen"
-        subtitle={`${summary.count} Einträge · Überschuss ${formatSignedCents(summary.surplusCents)}`}
+        title={t('transactions.title')}
+        subtitle={`${t('transactions.entries', { count: summary.count })} · ${t('transactions.surplusLabel')} ${formatSignedCents(summary.surplusCents)}`}
         action={
           <button className="btn btn-primary" onClick={() => navigate('/add')}>
-            <PlusCircle size={18} /> Neu
+            <PlusCircle size={18} /> {t('common.new')}
           </button>
         }
       />
@@ -66,7 +69,7 @@ export default function Transactions() {
         />
         <input
           className="input pl-11"
-          placeholder="Suchen (Kunde, Händler, Beschreibung)…"
+          placeholder={t('transactions.searchPlaceholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -76,7 +79,7 @@ export default function Transactions() {
 
       {groups.length === 0 ? (
         <div className="card text-center" style={{ color: 'var(--muted)' }}>
-          Keine Buchungen gefunden.
+          {t('transactions.empty')}
         </div>
       ) : (
         <div className="space-y-5">
@@ -103,12 +106,9 @@ export default function Transactions() {
   )
 }
 
-const MONTHS = [
-  'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-  'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
-]
-
 function formatMonth(key: string): string {
-  const [y, m] = key.split('-')
-  return `${MONTHS[Number.parseInt(m, 10) - 1]} ${y}`
+  const [y, m] = key.split('-').map(Number)
+  return new Intl.DateTimeFormat(getLocale(), { month: 'long', year: 'numeric' }).format(
+    new Date(y, m - 1, 1),
+  )
 }

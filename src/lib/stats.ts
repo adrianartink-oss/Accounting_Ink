@@ -29,7 +29,10 @@ export interface KleinunternehmerInfo {
   currentPct: number
   priorPct: number
   status: KuStatus
+  /** Deutscher Klartext (für Tests / Fallback). */
   message: string
+  /** i18n-Key unter `studio.*` für die lokalisierte Anzeige. */
+  messageKey: 'kuOk' | 'kuExceededCurrent' | 'kuExceededPrior' | 'kuWarn'
 }
 
 /**
@@ -45,19 +48,23 @@ export function kleinunternehmerStatus(
 
   let status: KuStatus = 'ok'
   let message = 'Kleinunternehmer-Regelung anwendbar.'
+  let messageKey: KleinunternehmerInfo['messageKey'] = 'kuOk'
 
   if (currentNetCents > KU_CURRENT_LIMIT_CENTS) {
     status = 'exceeded'
     message = '100.000-€-Grenze im laufenden Jahr überschritten – §19 endet ab dieser Buchung.'
+    messageKey = 'kuExceededCurrent'
   } else if (priorNetCents > KU_PRIOR_LIMIT_CENTS) {
     status = 'exceeded'
     message = 'Vorjahr über 25.000 € – dieses Jahr Regelbesteuerung statt §19.'
+    messageKey = 'kuExceededPrior'
   } else if (currentPct >= 0.8 || priorPct >= 0.8) {
     status = 'warn'
     message = 'Nahe an der Kleinunternehmer-Grenze – im Blick behalten.'
+    messageKey = 'kuWarn'
   }
 
-  return { currentNetCents, priorNetCents, currentPct, priorPct, status, message }
+  return { currentNetCents, priorNetCents, currentPct, priorPct, status, message, messageKey }
 }
 
 /** Aggregierte Tattoo-Kennzahlen. */

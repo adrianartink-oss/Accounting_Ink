@@ -1,4 +1,5 @@
 import { HardDrive, KeyRound, Save, ShieldCheck } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import AppLockSetup from './AppLockSetup'
 
 /**
@@ -7,6 +8,7 @@ import AppLockSetup from './AppLockSetup'
  * optional direkt eine App-Sperre einrichten.
  */
 export default function Onboarding({ onDone }: { onDone: () => void }) {
+  const { t } = useTranslation()
   return (
     <div
       className="flex min-h-screen items-start justify-center p-4 sm:items-center sm:p-6"
@@ -15,29 +17,24 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
       <div className="card my-4 w-full max-w-lg">
         <div className="mb-5">
           <div className="font-brand text-3xl" style={{ color: 'var(--accent)' }}>
-            Willkommen
+            {t('onboarding.welcome')}
           </div>
           <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
-            Deine private Buchhaltung (EÜR) – ganz auf deinem Gerät.
+            {t('onboarding.subtitle')}
           </p>
         </div>
 
         <div className="space-y-4">
-          <InfoRow icon={<HardDrive size={20} color="var(--accent)" />} title="Deine Daten bleiben bei dir">
-            Alle Buchungen liegen ausschließlich lokal in diesem Browser, auf diesem Gerät. Es
-            gibt keinen Server – niemand außer dir kann sie sehen.
+          <InfoRow icon={<HardDrive size={20} color="var(--accent)" />} title={t('onboarding.dataTitle')}>
+            {t('onboarding.dataBody')}
           </InfoRow>
 
-          <InfoRow icon={<Save size={20} color="var(--accent)" />} title="Bitte regelmäßig sichern">
-            Weil die Daten nur lokal liegen, gibt es keine automatische Cloud-Sicherung. Exportiere
-            in den Einstellungen ab und zu ein Backup (optional passwortgeschützt) und bewahre es
-            sicher auf.
+          <InfoRow icon={<Save size={20} color="var(--accent)" />} title={t('onboarding.backupTitle')}>
+            {t('onboarding.backupBody')}
           </InfoRow>
 
-          <InfoRow icon={<KeyRound size={20} color="var(--accent)" />} title="Beleg-Scan (optional)">
-            Für die KI-Belegerkennung hinterlegst du in den Einstellungen deinen eigenen
-            Anthropic-API-Key. Ohne Key funktioniert die App vollständig – nur der automatische
-            Scan entfällt (die lokale Texterkennung geht weiterhin).
+          <InfoRow icon={<KeyRound size={20} color="var(--accent)" />} title={t('onboarding.scanTitle')}>
+            {t('onboarding.scanBody')}
           </InfoRow>
 
           <div
@@ -47,7 +44,7 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
             <div className="mb-2 flex items-center gap-2">
               <ShieldCheck size={20} color="var(--accent)" />
               <span className="font-semibold" style={{ color: 'var(--fg)' }}>
-                App mit Passwort schützen (optional)
+                {t('onboarding.lockTitle')}
               </span>
             </div>
             <AppLockSetup compact />
@@ -55,7 +52,7 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
         </div>
 
         <button className="btn btn-primary mt-6 w-full" onClick={onDone}>
-          Los geht's
+          {t('onboarding.start')}
         </button>
       </div>
     </div>

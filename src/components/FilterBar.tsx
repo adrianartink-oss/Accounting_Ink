@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { TxFilter } from '../lib/euer'
 import type { Country, Sphere } from '../db/types'
 import { EU_COUNTRIES } from '../lib/countries'
@@ -12,6 +13,7 @@ export default function FilterBar({
   onChange: (patch: Partial<TxFilter>) => void
   years: number[]
 }) {
+  const { t } = useTranslation()
   return (
     <div className="mb-5 space-y-2">
       <select
@@ -20,9 +22,9 @@ export default function FilterBar({
         onChange={(e) =>
           onChange({ country: e.target.value === 'ALL' ? 'ALL' : (e.target.value as Country) })
         }
-        aria-label="Land filtern"
+        aria-label={t('filter.allCountries')}
       >
-        <option value="ALL">🌍 Alle Länder</option>
+        <option value="ALL">{t('filter.allCountriesGlobe')}</option>
         {EU_COUNTRIES.map((c) => (
           <option key={c.code} value={c.code}>
             {c.flag} {c.name}
@@ -32,19 +34,19 @@ export default function FilterBar({
 
       <ChipRow>
         <Chip active={filter.sphere === 'ALL' || !filter.sphere} onClick={() => onChange({ sphere: 'ALL' })}>
-          Alle
+          {t('filter.all')}
         </Chip>
         <Chip active={filter.sphere === 'business'} onClick={() => onChange({ sphere: 'business' as Sphere })}>
-          Gewerblich
+          {t('filter.business')}
         </Chip>
         <Chip active={filter.sphere === 'private'} onClick={() => onChange({ sphere: 'private' as Sphere })}>
-          Privat
+          {t('filter.private')}
         </Chip>
       </ChipRow>
 
       <ChipRow>
         <Chip active={filter.year === 'ALL'} onClick={() => onChange({ year: 'ALL' })}>
-          Alle Jahre
+          {t('filter.allYears')}
         </Chip>
         {years.map((y) => (
           <Chip key={y} active={filter.year === y} onClick={() => onChange({ year: y })}>
