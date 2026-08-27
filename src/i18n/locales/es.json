@@ -1,5 +1,17 @@
 {
   "_meta": { "status": "needs-review" },
+  "accessGate": {
+    "title": "Acceso privado",
+    "subtitle": "Esta aplicación es privada. Introduce tu código de acceso personal.",
+    "codePlaceholder": "Código de acceso (p. ej. INK-XXXX-XXXX)",
+    "submit": "Desbloquear",
+    "checking": "Comprobando…",
+    "error_invalid": "Código no válido. Revisa lo que has introducido.",
+    "error_used": "Este código ya se está usando en otro dispositivo.",
+    "error_network": "Sin conexión. Inténtalo de nuevo más tarde.",
+    "hint": "Recibes tu código personal directamente de mí. Es válido para tu dispositivo.",
+    "quotaExceeded": "Has alcanzado tu límite mensual de escaneos. Inténtalo de nuevo el mes que viene."
+  },
   "common": {
     "loading": "Cargando…",
     "new": "Nuevo",

@@ -1,0 +1,3 @@
+# Diese App ist privat und soll nicht in Suchmaschinen erscheinen.
+User-agent: *
+Disallow: /

@@ -1,5 +1,17 @@
 {
   "_meta": { "status": "reviewed" },
+  "accessGate": {
+    "title": "Private access",
+    "subtitle": "This app is private. Please enter your personal access code.",
+    "codePlaceholder": "Access code (e.g. INK-XXXX-XXXX)",
+    "submit": "Unlock",
+    "checking": "Checking…",
+    "error_invalid": "Invalid code. Please check your entry.",
+    "error_used": "This code is already in use on another device.",
+    "error_network": "No connection. Please try again later.",
+    "hint": "You receive your personal code directly from me. It is valid for your device.",
+    "quotaExceeded": "You have reached your monthly scan limit. Please try again next month."
+  },
   "common": {
     "loading": "Loading…",
     "new": "New",

@@ -3,6 +3,7 @@ import type { AiModel, Category, Country, Sphere, TxType } from '../db/types'
 import { decryptString, getDeviceSecret } from '../db/crypto'
 import type { Settings } from '../db/types'
 import { COUNTRY_CODES, isCountry } from './countries'
+import { accessAuth } from './accessgate'
 
 /** Ergebnis einer KI-Extraktion (Beleg-Scan oder Freitext). */
 export interface Extraction {
@@ -259,4 +260,73 @@ export async function testApiKey(apiKey: string, model: AiModel): Promise<boolea
     messages: [{ role: 'user', content: 'ping' }],
   })
   return true
+}
+
+// ── Managed-AI (Server-Proxy, kein eigener Nutzer-Key) ───────────────────────
+
+/** Monatliches Scan-Limit des Codes erreicht. */
+export class QuotaExceededError extends Error {
+  constructor() {
+    super('Monatliches Scan-Limit erreicht.')
+    this.name = 'QuotaExceededError'
+  }
+}
+
+/** Ist der serverseitige Claude-Proxy aktiv? (Build-Flag VITE_MANAGED_AI=on) */
+export function managedAiEnabled(): boolean {
+  return import.meta.env.VITE_MANAGED_AI === 'on'
+}
+
+function catsLite(categories: Category[]) {
+  return categories.map((c) => ({ id: c.id, name: c.name, kind: c.kind, sphere: c.sphere }))
+}
+
+async function callManaged(payload: Record<string, unknown>): Promise<Extraction> {
+  const auth = accessAuth()
+  const res = await fetch('/.netlify/functions/scan', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ ...payload, code: auth?.code, device: auth?.device }),
+  })
+  const data = (await res.json().catch(() => ({}))) as {
+    ok?: boolean
+    reason?: string
+    error?: string
+    extraction?: Extraction
+  }
+  if (res.status === 429 || data.reason === 'quota') throw new QuotaExceededError()
+  if (!res.ok || !data.ok || !data.extraction) throw new Error(data.error || 'Managed-AI-Fehler')
+  return data.extraction
+}
+
+/** Beleg-Scan über den Server-Proxy (Bild bleibt nur für die Analyse unterwegs). */
+export function scanReceiptManaged(
+  imageBase64: string,
+  mediaType: 'image/jpeg' | 'image/png' | 'image/webp',
+  categories: Category[],
+  settings: Settings,
+): Promise<Extraction> {
+  return callManaged({
+    mode: 'scan',
+    image: imageBase64,
+    mediaType,
+    categories: catsLite(categories),
+    countryCodes: COUNTRY_CODES,
+    defaultCountry: settings.defaultCountry,
+  })
+}
+
+/** Freitext-Buchung über den Server-Proxy. */
+export function parseNaturalLanguageManaged(
+  text: string,
+  categories: Category[],
+  settings: Settings,
+): Promise<Extraction> {
+  return callManaged({
+    mode: 'text',
+    text,
+    categories: catsLite(categories),
+    countryCodes: COUNTRY_CODES,
+    defaultCountry: settings.defaultCountry,
+  })
 }

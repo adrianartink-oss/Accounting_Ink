@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import {
@@ -25,6 +25,9 @@ import SettingsPage from './pages/SettingsPage'
 import Disclaimer from './components/Disclaimer'
 import Onboarding from './components/Onboarding'
 import LockScreen from './components/LockScreen'
+import AccessGate from './components/AccessGate'
+import AdminCodes from './pages/AdminCodes'
+import { hasAccess } from './lib/accessgate'
 
 const NAV = [
   { to: '/', labelKey: 'nav.overview', icon: LayoutDashboard, end: true },
@@ -50,8 +53,20 @@ export default function App() {
   const { t } = useTranslation()
   const settings = useSettings()
   const { locked, unlock } = useAppLock()
+  const [granted, setGranted] = useState(() => hasAccess())
 
-  // App-Sperre zuerst – auch für wiederkehrende Nutzer sofort sichtbar.
+  // Admin-Seite (Codes verwalten) umgeht das Gate – sie ist ohne das
+  // Admin-Geheimnis wirkungslos, das jede Aktion serverseitig prüft.
+  if (window.location.hash.replace(/^#/, '').startsWith('/admin')) {
+    return <AdminCodes />
+  }
+
+  // Privater Zugang zuerst: ohne gültigen Code kommt niemand in die App.
+  if (!granted) {
+    return <AccessGate onGranted={() => setGranted(true)} />
+  }
+
+  // App-Sperre danach – auch für wiederkehrende Nutzer sofort sichtbar.
   if (locked) {
     return <LockScreen onUnlock={unlock} />
   }

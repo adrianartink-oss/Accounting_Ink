@@ -1,5 +1,17 @@
 {
   "_meta": { "status": "source" },
+  "accessGate": {
+    "title": "Privater Zugang",
+    "subtitle": "Diese App ist privat. Bitte gib deinen persönlichen Zugangscode ein.",
+    "codePlaceholder": "Zugangscode (z. B. INK-XXXX-XXXX)",
+    "submit": "Freischalten",
+    "checking": "Wird geprüft…",
+    "error_invalid": "Code ungültig. Bitte prüfe deine Eingabe.",
+    "error_used": "Dieser Code wird bereits auf einem anderen Gerät verwendet.",
+    "error_network": "Keine Verbindung. Bitte später erneut versuchen.",
+    "hint": "Den persönlichen Code bekommst du direkt von mir. Er gilt für dein Gerät.",
+    "quotaExceeded": "Dein monatliches Scan-Limit ist erreicht. Bitte nächsten Monat wieder."
+  },
   "common": {
     "loading": "Wird geladen…",
     "new": "Neu",

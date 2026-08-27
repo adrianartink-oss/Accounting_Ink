@@ -7,6 +7,11 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Serverlose Funktionen (Zugangscodes + optionaler Claude-Proxy).
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 # SPA-Fallback (für Hash-Routing nicht zwingend, aber robust).
 # Greift nur, wenn keine echte Datei passt – Manifest/SW/Assets bleiben unberührt.
 [[redirects]]
