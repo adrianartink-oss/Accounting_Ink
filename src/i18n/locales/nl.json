@@ -1,5 +1,17 @@
 {
   "_meta": { "status": "needs-review" },
+  "accessGate": {
+    "title": "Privétoegang",
+    "subtitle": "Deze app is privé. Voer je persoonlijke toegangscode in.",
+    "codePlaceholder": "Toegangscode (bijv. INK-XXXX-XXXX)",
+    "submit": "Ontgrendelen",
+    "checking": "Bezig met controleren…",
+    "error_invalid": "Ongeldige code. Controleer je invoer.",
+    "error_used": "Deze code is al in gebruik op een ander apparaat.",
+    "error_network": "Geen verbinding. Probeer het later opnieuw.",
+    "hint": "Je ontvangt je persoonlijke code rechtstreeks van mij. Hij geldt voor jouw apparaat.",
+    "quotaExceeded": "Je maandelijkse scanlimiet is bereikt. Probeer het volgende maand opnieuw."
+  },
   "common": {
     "loading": "Laden…",
     "new": "Nieuw",

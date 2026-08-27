@@ -5,7 +5,9 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'dev-dist'] },
+  // Netlify-Funktionen (Node-Laufzeit) und Skripte werden separat gebündelt,
+  // nicht mit der browser-orientierten App-Konfiguration gelintet.
+  { ignores: ['dist', 'dev-dist', 'netlify', 'scripts'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

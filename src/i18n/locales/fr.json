@@ -1,5 +1,17 @@
 {
   "_meta": { "status": "needs-review" },
+  "accessGate": {
+    "title": "Accès privé",
+    "subtitle": "Cette application est privée. Saisis ton code d'accès personnel.",
+    "codePlaceholder": "Code d'accès (ex. INK-XXXX-XXXX)",
+    "submit": "Déverrouiller",
+    "checking": "Vérification…",
+    "error_invalid": "Code invalide. Vérifie ta saisie.",
+    "error_used": "Ce code est déjà utilisé sur un autre appareil.",
+    "error_network": "Pas de connexion. Réessaie plus tard.",
+    "hint": "Tu reçois ton code personnel directement de moi. Il est valable pour ton appareil.",
+    "quotaExceeded": "Tu as atteint ta limite mensuelle de scans. Réessaie le mois prochain."
+  },
   "common": {
     "loading": "Chargement…",
     "new": "Nouveau",

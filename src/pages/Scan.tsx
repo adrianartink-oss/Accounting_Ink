@@ -7,8 +7,12 @@ import { prepareImage } from '../lib/image'
 import { addReceipt } from '../db/repo'
 import {
   MissingApiKeyError,
+  QuotaExceededError,
+  managedAiEnabled,
   parseNaturalLanguage,
+  parseNaturalLanguageManaged,
   scanReceipt,
+  scanReceiptManaged,
   type Extraction,
 } from '../lib/anthropic'
 import type { TransactionFormValues } from '../components/TransactionForm'
@@ -28,7 +32,10 @@ export default function Scan() {
   const cameraRef = useRef<HTMLInputElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  const managed = managedAiEnabled()
   const hasKey = Boolean(settings.apiKeyEncrypted)
+  // Mit Managed-AI (Server-Proxy) braucht der Nutzer keinen eigenen Key.
+  const aiAvailable = hasKey || managed
   const [engine, setEngine] = useState<Engine>('local')
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -36,7 +43,7 @@ export default function Scan() {
   const [error, setError] = useState<string | null>(null)
   const [text, setText] = useState('')
 
-  const claudeReady = engine === 'claude' && hasKey
+  const claudeReady = engine === 'claude' && aiAvailable
   const canScan = engine === 'local' || claudeReady
 
   function extractionToPrefill(ex: Extraction): Partial<TransactionFormValues> {
@@ -53,7 +60,8 @@ export default function Scan() {
   }
 
   function handleError(err: unknown) {
-    if (err instanceof MissingApiKeyError) setError(err.message)
+    if (err instanceof QuotaExceededError) setError(t('accessGate.quotaExceeded'))
+    else if (err instanceof MissingApiKeyError) setError(err.message)
     else setError(t('scan.analysisFailed', { error: err instanceof Error ? err.message : String(err) }))
   }
 
@@ -81,7 +89,9 @@ export default function Scan() {
         navigate('/add', { state: { prefill, receiptId, fromAi: true } })
       } else {
         setStatus(t('scan.statusClaudeAnalyzing'))
-        const extraction = await scanReceipt(prepared.base64, prepared.mediaType, categories, settings)
+        const extraction = managed
+          ? await scanReceiptManaged(prepared.base64, prepared.mediaType, categories, settings)
+          : await scanReceipt(prepared.base64, prepared.mediaType, categories, settings)
         const receiptId = await addReceipt(prepared.blob, prepared.thumbnail)
         navigate('/add', { state: { prefill: extractionToPrefill(extraction), receiptId, fromAi: true } })
       }
@@ -94,11 +104,13 @@ export default function Scan() {
   }
 
   async function handleText() {
-    if (!text.trim()) return
+    if (!text.trim() || !aiAvailable) return
     setError(null)
     setBusy(true)
     try {
-      const extraction = await parseNaturalLanguage(text.trim(), categories, settings)
+      const extraction = managed
+        ? await parseNaturalLanguageManaged(text.trim(), categories, settings)
+        : await parseNaturalLanguage(text.trim(), categories, settings)
       navigate('/add', { state: { prefill: extractionToPrefill(extraction), fromAi: true } })
     } catch (err) {
       handleError(err)
@@ -136,7 +148,7 @@ export default function Scan() {
         <p className="mb-4 text-sm" style={{ color: 'var(--muted)' }}>
           {t('scan.localDesc')}
         </p>
-      ) : !hasKey ? (
+      ) : !aiAvailable ? (
         <div className="card mb-4 flex items-start gap-3" style={{ borderColor: 'var(--accent)' }}>
           <KeyRound size={20} color="var(--accent)" className="mt-0.5 shrink-0" />
           <div className="text-sm" style={{ color: 'var(--fg)' }}>
@@ -233,7 +245,7 @@ export default function Scan() {
         />
         <button
           className="btn btn-primary mt-3 w-full"
-          disabled={!hasKey || !text.trim() || busy}
+          disabled={!aiAvailable || !text.trim() || busy}
           onClick={handleText}
         >
           <Sparkles size={18} /> {t('scan.toTransaction')}
