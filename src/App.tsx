@@ -26,6 +26,7 @@ import Disclaimer from './components/Disclaimer'
 import Onboarding from './components/Onboarding'
 import LockScreen from './components/LockScreen'
 import AccessGate from './components/AccessGate'
+import AdminCodes from './pages/AdminCodes'
 import { hasAccess } from './lib/accessgate'
 
 const NAV = [
@@ -53,6 +54,12 @@ export default function App() {
   const settings = useSettings()
   const { locked, unlock } = useAppLock()
   const [granted, setGranted] = useState(() => hasAccess())
+
+  // Admin-Seite (Codes verwalten) umgeht das Gate – sie ist ohne das
+  // Admin-Geheimnis wirkungslos, das jede Aktion serverseitig prüft.
+  if (window.location.hash.replace(/^#/, '').startsWith('/admin')) {
+    return <AdminCodes />
+  }
 
   // Privater Zugang zuerst: ohne gültigen Code kommt niemand in die App.
   if (!granted) {
