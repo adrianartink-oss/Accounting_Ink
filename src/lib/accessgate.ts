@@ -18,9 +18,18 @@ export interface AccessGrant {
   at: number
 }
 
-/** Ist das Zugangs-Gate aktiv? (Build-Flag VITE_ACCESS_GATE=on) */
+/**
+ * Ist das Zugangs-Gate aktiv?
+ * Fail-closed: im Produktions-Build standardmäßig AN (privat), außer es wird
+ * ausdrücklich per VITE_ACCESS_GATE=off deaktiviert. In der lokalen Entwicklung
+ * standardmäßig AUS (damit `npm run dev` ohne Netlify-Funktionen läuft), außer
+ * per VITE_ACCESS_GATE=on erzwungen.
+ */
 export function gateActive(): boolean {
-  return import.meta.env.VITE_ACCESS_GATE === 'on'
+  const flag = import.meta.env.VITE_ACCESS_GATE
+  if (flag === 'on') return true
+  if (flag === 'off') return false
+  return import.meta.env.PROD === true
 }
 
 /** Stabile, zufällige Geräte-ID (einmal erzeugt, danach persistent). */
